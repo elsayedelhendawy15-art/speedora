@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>عجلة الحظ | Speedora</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .wheel-wrap { display: flex; flex-direction: column; align-items: center; padding: 20px 0; }
+  .wheel-stage { position: relative; width: 320px; height: 320px; margin: 20px 0; }
+  .pointer {
+    position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 18px solid transparent;
+    border-right: 18px solid transparent;
+    border-top: 32px solid #ffca62;
+    z-index: 10;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,.5));
+  }
+  .wheel {
+    width: 100%; height: 100%; border-radius: 50%;
+    border: 8px solid #ffca62;
+    box-shadow: 0 0 40px rgba(255,202,98,.4), inset 0 0 30px rgba(0,0,0,.5);
+    position: relative;
+    transition: transform 5s cubic-bezier(.17,.67,.12,.99);
+  }
+  .wheel-label {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform-origin: 0 0;
+    color: white;
+    font-weight: 800;
+    font-size: 14px;
+    text-shadow: 0 2px 4px rgba(0,0,0,.7);
+    pointer-events: none;
+  }
+  .wheel-center {
+    position: absolute; top: 50%; left: 50%;
+    width: 60px; height: 60px;
+    background: radial-gradient(circle, #ffca62, #d97706);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    display: grid; place-items: center;
+    font-size: 28px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.5);
+  }
+  .spin-btn {
+    background: linear-gradient(100deg,#d43bea,#642cff);
+    color: white; border: 0;
+    padding: 16px 40px; border-radius: 14px;
+    font-size: 16px; font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 8px 30px rgba(100,44,255,.5);
+    font-family: inherit;
+  }
+  .spin-btn:disabled { opacity: .5; cursor: not-allowed; }
+  .wheel-status { text-align: center; margin-top: 16px; font-size: 15px; color: #c7a0ff; min-height: 24px; font-weight: bold; }
+  .info-box { background: #101831; border: 1px solid #3b2c76; border-radius: 14px; padding: 16px; max-width: 480px; margin: 24px auto; text-align: center; font-size: 13px; color: #b5b7d3; }
+</style>
+</head>
+<body data-page="wheel">
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="bolt">ϟ</span><span>Speedora<small>Play. Complete. Earn.</small></span></a>
+    <nav class="nav">
+      <a href="index.html">⌂ Home</a>
+      <a href="games.html">🎮 Games</a>
+      <a href="earn.html">▤ Earn</a>
+      <a href="rewards.html">🎁 Rewards</a>
+      <a href="wheel.html" class="active">🎡 Wheel</a>
+      <a href="achievements.html">🏅 Achievements</a>
+      <a href="leaderboard.html">🏆 Leaderboard</a>
+      <a href="wallet.html">▣ Wallet</a>
+      <a href="profile.html">♙ Profile</a>
+    </nav>
+    <div class="sidefoot">© 2026 Speedora</div>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <button class="menu" id="menu">☰</button>
+      <div class="crumb">Wheel of Fortune</div>
+      <div class="actions"><a class="user" href="profile.html"><span class="avatar">A</span><span><b id="userName">Player</b><br><small id="userBalance">0 pts</small></span></a></div>
+    </header>
+    <main class="content">
+      <div class="pagehead">
+        <div><span class="eyebrow">DAILY LUCK</span><h1>عجلة الحظ</h1><p>لف العجلة مرة واحدة كل يوم واربح حتى 1000 نقطة</p></div>
+        <span class="badge">الرصيد: <b id="balanceBadge">0</b></span>
+      </div>
+
+      <div class="wheel-wrap">
+        <div class="wheel-stage">
+          <div class="pointer"></div>
+          <div class="wheel" id="wheel"></div>
+          <div class="wheel-center">🎁</div>
+        </div>
+        <button class="spin-btn" id="spinBtn">🎡 لف العجلة!</button>
+        <div class="wheel-status" id="status"></div>
+      </div>
+
+      <div class="info-box">
+        💡 <b>نصيحة:</b> لف العجلة كل يوم - ممكن تكسب حتى 1000 نقطة إضافية!
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="core.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => Number(n || 0).toLocaleString('en-US');
+
+const prizes = Speedora.getWheelPrizes();
+const segCount = prizes.length;
+const anglePer = 360 / segCount;
+const wheel = $('wheel');
+
+// بناء العجلة
+const gradient = prizes.map((p, i) => `${p.color} ${i*anglePer}deg ${(i+1)*anglePer}deg`).join(', ');
+wheel.style.background = `conic-gradient(from ${-anglePer/2}deg, ${gradient})`;
+
+// إضافة النصوص
+prizes.forEach((p, i) => {
+  const el = document.createElement('div');
+  el.className = 'wheel-label';
+  el.textContent = p.label;
+  const angle = i * anglePer;
+  el.style.transform = `translate(-50%, -50%) rotate(${angle}deg) translateY(-110px) rotate(${-angle}deg)`;
+  wheel.appendChild(el);
+});
+
+let spinning = false;
+
+function updateUI() {
+  const s = Speedora.get();
+  $('balanceBadge').textContent = fmt(s.balance);
+  $('userBalance').textContent = fmt(s.balance) + ' pts';
+  $('userName').textContent = 'Player';
+  const can = Speedora.canSpin();
+  $('spinBtn').disabled = !can || spinning;
+  if (!can) { $('status').textContent = '✓ لعبت النهاردة. ارجع بكرة!'; $('spinBtn').textContent = '✓ العب بكرة'; }
+  else { $('spinBtn').textContent = '🎡 لف العجلة!'; }
+}
+
+$('spinBtn').onclick = () => {
+  if (spinning) return;
+  const result = Speedora.spin();
+  if (result.error) { alert(result.error); return; }
+  
+  spinning = true;
+  $('spinBtn').disabled = true;
+  $('status').textContent = '🎲 بتلف...';
+  
+  // احسب الزاوية المطلوبة
+  const targetRotation = 360 * 6 - result.index * anglePer;
+  wheel.style.transform = `rotate(${targetRotation}deg)`;
+  
+  setTimeout(() => {
+    spinning = false;
+    const p = result.prize;
+    if (p.points > 0) {
+      $('status').textContent = `🎉 مبروك! +${p.points} نقطة`;
+    } else {
+      $('status').textContent = '😅 حظ أوفر! جرب بكرة';
+    }
+    updateUI();
+  }, 5200);
+};
+
+window.addEventListener('pointsUpdated', updateUI);
+$('menu')?.addEventListener('click', () => document.querySelector('.sidebar')?.classList.toggle('open'));
+updateUI();
+</script>
+</body>
+</html>
