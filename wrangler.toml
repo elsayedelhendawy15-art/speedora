@@ -1,0 +1,8 @@
+name = "speedora"
+main = "worker.js"
+compatibility_date = "2026-11-09"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "speedora-db"
+database_id = "2746c227-2ad7-4205-a59c-e04e737c82c2"
