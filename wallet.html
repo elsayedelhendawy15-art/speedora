@@ -3,33 +3,66 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#080b19">
 <title>المحفظة | Speedora</title>
 <link rel="stylesheet" href="styles.css">
 <style>
-  .wallet-hero { background: radial-gradient(ellipse at 80% 0, #5a29ad77, transparent 55%), #111832; border: 1px solid #3b2c76; border-radius: 20px; padding: 32px; margin-bottom: 16px; }
+  .wallet-hero { background: radial-gradient(ellipse at 80% 0, #5a29ad77, transparent 55%), #111832; border: 1px solid #3b2c76; border-radius: 20px; padding: 28px; margin-bottom: 16px; position: relative; }
+  .demo-badge { display: inline-block; background: #422006; color: #f59e0b; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 700; border: 1px solid #f59e0b; margin-bottom: 12px; }
   .wallet-hero .pts { font-size: 3rem; font-weight: 800; letter-spacing: -2px; color: #c7a0ff; line-height: 1.1; }
-  .wallet-hero .egp { color: #87e5d6; font-size: 15px; margin-top: 6px; }
+  .wallet-hero .egp { color: #87e5d6; font-size: 13px; margin-top: 4px; }
+  .wallet-hero .note { color: #8998ba; font-size: 11px; margin-top: 6px; }
+
   .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
   .stat-mini { background: #0b1328; border: 1px solid #202d4d; border-radius: 12px; padding: 12px; text-align: center; }
   .stat-mini b { display: block; font-size: 20px; color: #c7a0ff; }
   .stat-mini small { color: #8998ba; font-size: 10px; }
-  .level-bar { margin-top: 20px; padding: 16px; background: #0b1328; border-radius: 12px; border: 1px solid #202d4d; }
+
+  .level-bar { margin-top: 18px; padding: 16px; background: #0b1328; border-radius: 12px; border: 1px solid #202d4d; }
   .level-bar .head { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 12px; }
   .level-bar .bar { height: 10px; background: #1d2a49; border-radius: 10px; overflow: hidden; }
   .level-bar .bar span { display: block; height: 100%; background: linear-gradient(90deg, #3cc8ed, #9656ff, #d43bea); transition: width .5s; }
+  .level-bar .next { text-align: center; margin-top: 8px; font-size: 11px; color: #8998ba; }
+
   .daily-card { background: linear-gradient(135deg, #2a1b50, #101831); border: 1px solid #5a3b83; border-radius: 16px; padding: 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-  .daily-card h3 { margin: 0 0 4px; font-size: 16px; }
+  .daily-card h3 { margin: 0 0 4px; font-size: 15px; }
   .daily-card p { margin: 0; font-size: 12px; color: #b5b7d3; }
-  .daily-card button { background: linear-gradient(100deg, #d43bea, #642cff); color: white; border: 0; padding: 12px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 13px; }
+  .daily-card button { background: linear-gradient(100deg, #d43bea, #642cff); color: white; border: 0; padding: 12px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 13px; font-family: inherit; }
   .daily-card button:disabled { background: #222; cursor: not-allowed; opacity: .6; }
-  .tx-row { display: flex; justify-content: space-between; padding: 14px; background: #0e172d; border-radius: 10px; margin-bottom: 8px; border-right: 3px solid #753cff; font-size: 13px; }
+
+  /* Summary Cards */
+  .summary-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+  .summary-card { background: #0e172d; border: 1px solid #223052; border-radius: 12px; padding: 14px; }
+  .summary-card h4 { margin: 0 0 4px; font-size: 11px; color: #8998ba; font-weight: 500; }
+  .summary-card b { font-size: 18px; display: block; }
+  .summary-card.positive b { color: #10b981; }
+  .summary-card.negative b { color: #ef4444; }
+
+  /* Filters */
+  .tx-filters { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .tx-filters button { background: #0f1830; color: #aab8d7; border: 1px solid #2b385b; padding: 7px 14px; border-radius: 20px; cursor: pointer; font-size: 11px; font-family: inherit; }
+  .tx-filters button.active { background: #43228e; color: white; border-color: #8b5cf6; }
+
+  /* Transaction rows */
+  .tx-list { display: flex; flex-direction: column; gap: 6px; }
+  .tx-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #0e172d; border-radius: 10px; border-right: 3px solid #753cff; transition: .2s; }
+  .tx-row:hover { background: #131e3d; }
   .tx-row.plus { border-right-color: #10b981; }
   .tx-row.minus { border-right-color: #ef4444; }
-  .tx-row .amt.plus { color: #10b981; font-weight: bold; }
-  .tx-row .amt.minus { color: #ef4444; font-weight: bold; }
-  .tx-row small { color: #8998ba; font-size: 10px; display: block; margin-top: 2px; }
-  .empty-state { text-align: center; padding: 40px 20px; color: #8998ba; }
+  .tx-icon { width: 36px; height: 36px; border-radius: 10px; background: #1a2440; display: grid; place-items: center; font-size: 18px; flex-shrink: 0; }
+  .tx-info { flex: 1; min-width: 0; }
+  .tx-info b { font-size: 13px; color: #f4f6ff; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tx-info small { font-size: 10px; color: #8998ba; }
+  .tx-amt { font-size: 14px; font-weight: 800; text-align: left; flex-shrink: 0; }
+  .tx-amt.plus { color: #10b981; }
+  .tx-amt.minus { color: #ef4444; }
+
+  .empty-state { text-align: center; padding: 50px 20px; color: #8998ba; }
+  .empty-state .icon { font-size: 50px; margin-bottom: 10px; opacity: .5; }
+
+  .group-header { font-size: 11px; color: #8998ba; margin: 16px 0 6px; font-weight: 600; padding-right: 4px; }
+
+  .info-card { background: #1e1a3d; border-right: 4px solid #753cff; padding: 14px 18px; border-radius: 8px; margin-top: 16px; }
+  .info-card p { margin: 0; color: #c7a0ff; font-size: 12px; line-height: 1.7; }
 </style>
 </head>
 <body data-page="wallet">
@@ -37,14 +70,15 @@
   <aside class="sidebar">
     <a class="brand" href="index.html"><span class="bolt">ϟ</span><span>Speedora<small>Play. Complete. Earn.</small></span></a>
     <nav class="nav">
-      <a href="index.html">⌂ &nbsp; Home</a>
-      <a href="games.html">🎮 &nbsp; Games</a>
-      <a href="earn.html">▤ &nbsp; Earn</a>
-      <a href="rewards.html">🎁 &nbsp; Rewards</a>
-      <a href="leaderboard.html">🏆 &nbsp; Leaderboard</a>
-      <a class="active" href="wallet.html">▣ &nbsp; Wallet</a>
-      <a href="profile.html">♙ &nbsp; Profile</a>
-      <a href="support.html">ⓘ &nbsp; Support</a>
+      <a href="index.html">⌂ Home</a>
+      <a href="games.html">🎮 Games</a>
+      <a href="earn.html">▤ Earn</a>
+      <a href="rewards.html">🎁 Rewards</a>
+      <a href="wheel.html">🎡 Wheel</a>
+      <a href="achievements.html">🏅 Achievements</a>
+      <a href="leaderboard.html">🏆 Leaderboard</a>
+      <a class="active" href="wallet.html">▣ Wallet</a>
+      <a href="profile.html">♙ Profile</a>
     </nav>
     <div class="sidefoot">© 2026 Speedora</div>
   </aside>
@@ -56,22 +90,26 @@
     </header>
     <main class="content">
       <div class="pagehead">
-        <div><span class="eyebrow">YOUR WEALTH</span><h1>المحفظة</h1><p>كل نقاطك وأرباحك في مكان واحد</p></div>
+        <div><span class="eyebrow">YOUR ACCOUNT</span><h1>المحفظة</h1><p>كل نقاطك ومعاملاتك بشفافية كاملة</p></div>
       </div>
 
       <div class="wallet-hero">
-        <span class="eyebrow">الرصيد المتاح</span>
+        <span class="demo-badge">⚠️ نقاط تجريبية — غير قابلة للسحب حالياً</span>
+        <span class="eyebrow" style="display:block">الرصيد المتاح</span>
         <div class="pts" id="walletBalance">0</div>
         <div class="egp" id="walletEgp">≈ 0.00 EGP</div>
+        <div class="note">القيمة التقديرية فقط — غير مضمونة حتى الإطلاق الرسمي</div>
+
         <div class="stat-grid">
           <div class="stat-mini"><b id="statEarned">0</b><small>إجمالي المكسوب</small></div>
-          <div class="stat-mini"><b id="statRedeemed">0</b><small>المستبدل</small></div>
+          <div class="stat-mini"><b id="statSpent">0</b><small>إجمالي المصروف</small></div>
           <div class="stat-mini"><b id="statLevel">1</b><small id="levelName">مبتدئ</small></div>
         </div>
+
         <div class="level-bar">
           <div class="head"><span>المستوى <b id="lvlCur">1</b></span><span><b id="lvlProg">0</b>% للمستوى التالي</span></div>
           <div class="bar"><span id="lvlBar" style="width:0%"></span></div>
-          <div style="text-align:center;margin-top:8px;font-size:11px;color:#8998ba" id="lvlNext">محتاج 0 نقطة للمستوى التالي</div>
+          <div class="next" id="lvlNext">—</div>
         </div>
       </div>
 
@@ -83,17 +121,40 @@
         <button id="claimBtn">استلم</button>
       </div>
 
-      <section class="panel" style="margin-top:16px">
+      <div class="summary-row">
+        <div class="summary-card positive"><h4>من الألعاب</h4><b id="sumGames">0</b></div>
+        <div class="summary-card positive"><h4>من المكافآت</h4><b id="sumBonus">0</b></div>
+        <div class="summary-card positive"><h4>من الإنجازات</h4><b id="sumAch">0</b></div>
+        <div class="summary-card negative"><h4>من المشتريات</h4><b id="sumPurch">0</b></div>
+      </div>
+
+      <section class="panel">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-          <h2 style="margin:0;font-size:18px">سجل المعاملات</h2>
+          <h2 style="margin:0;font-size:16px">📋 سجل المعاملات</h2>
           <span style="font-size:11px;color:#8998ba" id="txCount">0 عملية</span>
         </div>
-        <div id="txList"></div>
+
+        <div class="tx-filters" id="txFilters">
+          <button class="active" data-filter="all">الكل</button>
+          <button data-filter="earned">مكسوب</button>
+          <button data-filter="spent">مصروف</button>
+          <button data-filter="game">ألعاب</button>
+          <button data-filter="bonus">مكافآت</button>
+          <button data-filter="achievement">إنجازات</button>
+          <button data-filter="purchase">مشتريات</button>
+        </div>
+
+        <div id="txList" class="tx-list"></div>
       </section>
 
+      <div class="info-card">
+        <p>ℹ️ <b>ملاحظة شفافية:</b> كل الأرقام دي في <b>متصفحك فقط</b>. عشان نمنع أي تلاعب، سيتم نقل الرصيد لسيرفر آمن عند إطلاق المكافآت الحقيقية. حالياً، النقاط للاستخدام التجريبي فقط.</p>
+      </div>
+
       <div class="banner" style="margin-top:16px">
-        <b>معدل التحويل</b>
+        <b>معدل التحويل (تقديري)</b>
         <p><span id="convRate">100</span> نقطة = 1 ج.م · الحد الأدنى للاستبدال: <b id="minRedeem">5000</b> نقطة (50 ج.م)</p>
+        <p style="color:#f59e0b;margin-top:6px">⚠️ هذا المعدل تقديري وسيتم تأكيده عند الإطلاق الرسمي.</p>
       </div>
     </main>
   </div>
@@ -103,56 +164,127 @@
 <script>
 const $ = id => document.getElementById(id);
 const fmt = n => Number(n || 0).toLocaleString('en-US');
+let activeFilter = 'all';
+
+const TYPE_ICONS = {
+  game: '🎮', task: '✅', bonus: '🎁', wheel: '🎡',
+  scratch: '🎫', achievement: '🏅', redeem: '💳', purchase: '🛒'
+};
+const TYPE_NAMES = {
+  game: 'لعبة', task: 'مهمة', bonus: 'مكافأة', wheel: 'عجلة',
+  scratch: 'سكراتش', achievement: 'إنجاز', redeem: 'استبدال', purchase: 'شراء'
+};
+
+function timeAgo(iso) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return 'الآن';
+  if (min < 60) return `قبل ${min} دقيقة`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `قبل ${hr} ساعة`;
+  const days = Math.floor(hr / 24);
+  if (days === 1) return 'أمس';
+  if (days < 7) return `قبل ${days} أيام`;
+  return new Date(iso).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' });
+}
 
 function render() {
   const s = Speedora.get();
   const conv = Speedora.getConversion();
   const lvl = Speedora.getLevelInfo();
+  const stats = Speedora.getActivityStats();
 
+  // Hero
   $('walletBalance').textContent = fmt(s.balance);
   $('walletEgp').textContent = `≈ ${(s.balance / conv.rate).toFixed(2)} EGP`;
   $('statEarned').textContent = fmt(s.earned);
-  $('statRedeemed').textContent = fmt(s.redeemed);
+  $('statSpent').textContent = fmt(s.redeemed);
   $('statLevel').textContent = lvl.level;
   $('levelName').textContent = lvl.name;
+
+  // Level bar
   $('lvlCur').textContent = lvl.level;
   $('lvlProg').textContent = Math.round(lvl.progress);
   $('lvlBar').style.width = lvl.progress + '%';
-  $('lvlNext').textContent = `محتاج ${fmt(lvl.next - s.earned)} نقطة للمستوى التالي`;
-  $('userName').textContent = 'Player';
+  if (lvl.isMax) {
+    $('lvlNext').textContent = '🏆 وصلت لأعلى مستوى!';
+  } else {
+    $('lvlNext').textContent = `تحتاج ${fmt(lvl.remaining)} نقطة للمستوى ${lvl.level + 1}`;
+  }
+
+  // Header
+  $('userName').textContent = Speedora.getUserName();
   $('userBalance').textContent = fmt(s.balance) + ' pts';
-  $('convRate').textContent = conv.rate;
-  $('minRedeem').textContent = fmt(conv.minRedeem);
+
+  // Summary
+  $('sumGames').textContent = fmt(stats.gameEarnings);
+  $('sumBonus').textContent = fmt(stats.bonusEarnings);
+  $('sumAch').textContent = fmt(stats.achievementEarnings);
+  $('sumPurch').textContent = fmt(stats.purchaseSpending);
 
   // Daily
   const canClaim = Speedora.canClaimDaily();
   $('claimBtn').disabled = !canClaim;
   if (canClaim) {
-    const nextStreak = s.streak + (s.lastClaim && isYesterday(s.lastClaim) ? 1 : 0);
-    const bonus = Speedora.streakBonus(nextStreak || 1);
-    $('dailyStatus').textContent = `+${bonus} نقطة · سلسلة ${nextStreak || 1} يوم`;
+    const nextStreak = s.lastClaim && isYesterday(s.lastClaim) ? s.streak + 1 : 1;
+    const bonus = Speedora.streakBonus(nextStreak);
+    $('dailyStatus').textContent = `+${bonus} نقطة · سلسلة ${nextStreak} يوم`;
     $('claimBtn').textContent = 'استلم الآن';
   } else {
     $('dailyStatus').textContent = `سلسلة ${s.streak} يوم · ارجع بكرة`;
     $('claimBtn').textContent = '✓ مستلمة';
   }
 
+  // Conversion
+  $('convRate').textContent = conv.rate;
+  $('minRedeem').textContent = fmt(conv.minRedeem);
+
   // Transactions
+  renderTransactions();
+}
+
+function renderTransactions() {
+  const all = Speedora.getActivityByType(activeFilter);
   const list = $('txList');
-  $('txCount').textContent = (s.activity?.length || 0) + ' عملية';
-  if (!s.activity || !s.activity.length) {
-    list.innerHTML = '<div class="empty-state">لسه مفيش عمليات. جرب تلعب لعبة أو تستلم المكافأة اليومية!</div>';
-  } else {
-    list.innerHTML = s.activity.slice(0, 30).map(a => {
+  $('txCount').textContent = `${all.length} عملية`;
+
+  if (!all.length) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">📭</div>مفيش معاملات في هذا القسم بعد</div>`;
+    return;
+  }
+
+  // Group by date
+  const groups = {};
+  all.slice(0, 100).forEach(a => {
+    const d = new Date(a.date);
+    const today = new Date();
+    const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+    let key;
+    if (d.toDateString() === today.toDateString()) key = 'اليوم';
+    else if (d.toDateString() === yesterday.toDateString()) key = 'أمس';
+    else key = d.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long' });
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(a);
+  });
+
+  let html = '';
+  for (const [dateLabel, items] of Object.entries(groups)) {
+    html += `<div class="group-header">${dateLabel}</div>`;
+    html += items.map(a => {
       const isPlus = a.points > 0;
-      const date = new Date(a.date).toLocaleString('ar-EG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-      const typeIcon = a.type === 'game' ? '🎮' : a.type === 'bonus' ? '🎁' : a.type === 'task' ? '▤' : a.type === 'redeem' ? '💳' : '●';
+      const icon = TYPE_ICONS[a.type] || '●';
+      const typeName = TYPE_NAMES[a.type] || 'معاملة';
       return `<div class="tx-row ${isPlus ? 'plus' : 'minus'}">
-        <div><b>${typeIcon} ${a.title}</b><small>${date}</small></div>
-        <div class="amt ${isPlus ? 'plus' : 'minus'}">${isPlus ? '+' : ''}${fmt(a.points)}</div>
+        <div class="tx-icon">${icon}</div>
+        <div class="tx-info">
+          <b>${a.title}</b>
+          <small>${typeName} · ${timeAgo(a.date)}</small>
+        </div>
+        <div class="tx-amt ${isPlus ? 'plus' : 'minus'}">${isPlus ? '+' : ''}${fmt(a.points)}</div>
       </div>`;
     }).join('');
   }
+  list.innerHTML = html;
 }
 
 function isYesterday(iso) {
@@ -162,9 +294,20 @@ function isYesterday(iso) {
 
 $('claimBtn').onclick = () => {
   const r = Speedora.claimDaily();
-  if (r.error) { alert(r.error); return; }
+  if (r.error) { Speedora.showToast(r.error, 'warning'); return; }
+  Speedora.playSound('success');
+  Speedora.showToast(`+${r.bonus} نقطة! سلسلة ${r.streak} يوم 🔥`, 'success');
   render();
 };
+
+document.querySelectorAll('#txFilters button').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('#txFilters button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    activeFilter = b.dataset.filter;
+    renderTransactions();
+  };
+});
 
 window.addEventListener('pointsUpdated', render);
 $('menu')?.addEventListener('click', () => document.querySelector('.sidebar')?.classList.toggle('open'));
