@@ -1,9 +1,21 @@
 /* ==========================================
-   Speedora — Core Engine v4
-   (إصلاح المستويات + تحسين السجل + وضوح Demo)
+   Speedora — Core Engine v5
+   (ربط مع السيرفر السحابي + إصلاح المستويات)
    ========================================== */
 (function () {
   const KEY = 'speedora_state';
+  
+  // ===== إعدادات السيرفر السحابي =====
+  const API_URL = 'https://speedora-api.elsayedelhendawy15.workers.dev';
+  
+  // إنشاء معرف مستخدم فريد وتخزينه (عشان السيرفر يعرف مين ده)
+  let USER_ID = localStorage.getItem('speedora_user_id');
+  if (!USER_ID) {
+    USER_ID = 'user_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+    localStorage.setItem('speedora_user_id', USER_ID);
+  }
+  let syncTimeout = null; // لمنع إرسال طلبات كثيرة للسيرفر في وقت واحد
+
   const DEFAULTS = {
     balance: 0, earned: 0, redeemed: 0, activity: [],
     streak: 0, lastClaim: null, level: 1,
@@ -110,10 +122,27 @@
     } catch { return { ...DEFAULTS }; }
   };
 
+  // ===== دالة الحفظ (المحدثة للربط بالسحابة) =====
   const save = (s) => {
     localStorage.setItem(KEY, JSON.stringify(s));
     window.dispatchEvent(new CustomEvent('pointsUpdated', { detail: s }));
+    
+    // إرسال للسيرفر بعد ثانية ونصف (عشان ميبعتش طلبات كتير أثناء اللعب السريع)
+    if (syncTimeout) clearTimeout(syncTimeout);
+    syncTimeout = setTimeout(async () => {
+      try {
+        await fetch(`${API_URL}/api/save`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: USER_ID, state: s })
+        });
+        console.log('☁️ تم الحفظ في السحابة بنجاح');
+      } catch (e) {
+        console.warn('⚠️ فشل الاتصال بالسحابة (البيانات محفوظة محلياً):', e);
+      }
+    }, 1500);
   };
+
   const calcLevel = (earned) => { let l = 1; LEVELS.forEach((v, i) => { if (earned >= v) l = i + 1; }); return l; };
   const streakBonus = (streak) => streak < 3 ? 50 : streak < 7 ? 100 : streak < 14 ? 200 : streak < 30 ? 350 : 500;
 
@@ -307,7 +336,6 @@
       return (s.activity || []).some(a => a.type === 'task' && a.title === taskId && new Date(a.date).toDateString() === today);
     },
 
-    /* ===== FIXED: getLevelInfo ===== */
     getLevelInfo() {
       const s = load();
       const lvl = calcLevel(s.earned);
@@ -343,7 +371,6 @@
     getConversion: () => ({ rate: POINTS_PER_EGP, minRedeem: MIN_REDEEM }),
     streakBonus,
 
-    /* ===== Activity Summary ===== */
     getActivityStats() {
       const s = load();
       const acts = s.activity || [];
@@ -488,4 +515,31 @@
   window.addEventListener('achievementUnlocked', e => {
     if (window.Speedora) window.Speedora.showToast(`${e.detail.icon} إنجاز: ${e.detail.title} (+${e.detail.reward})`, 'success');
   });
+
+  // ===== 🆕 تحميل البيانات من السحابة عند فتح الموقع =====
+  async function loadFromCloud() {
+    try {
+      const res = await fetch(`${API_URL}/api/load?userId=${USER_ID}`);
+      const data = await res.json();
+      
+      if (data.ok && data.state) {
+        const local = JSON.parse(localStorage.getItem(KEY) || '{}');
+        
+        // لو السحابة فيها نقاط أكتر من المتصفح (يعني المستخدم دخل من جهاز جديد مثلاً)، نستخدم بيانات السحابة
+        if (!local.earned || (data.state.earned > local.earned)) {
+          console.log('☁️ تم استرجاع أحدث البيانات من السحابة');
+          localStorage.setItem(KEY, JSON.stringify(data.state));
+          window.dispatchEvent(new CustomEvent('pointsUpdated', { detail: data.state }));
+        }
+      }
+    } catch (e) {
+      console.warn('⚠️ تعذر التحميل من السحابة (ممكن يكون نت ضعيف)', e);
+    }
+  }
+
+  // تشغيل التحميل بعد فتح الصفحة بنصف ثانية
+  window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(loadFromCloud, 500); 
+  });
+
 })();
