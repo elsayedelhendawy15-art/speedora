@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>الإنجازات | Speedora</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .ach-card {
+    background: linear-gradient(145deg, #111a34, #0b1225);
+    border: 1px solid #223052;
+    border-radius: 14px;
+    padding: 18px;
+    text-align: center;
+    position: relative;
+    transition: .2s;
+  }
+  .ach-card.unlocked { border-color: #f59e0b; background: linear-gradient(145deg, #2a1f0a, #1a1206); }
+  .ach-card:hover { transform: translateY(-2px); }
+  .ach-icon { font-size: 40px; margin-bottom: 8px; opacity: .4; }
+  .ach-card.unlocked .ach-icon { opacity: 1; filter: drop-shadow(0 0 12px #ffca62); }
+  .ach-card h3 { font-size: 14px; margin: 0 0 4px; color: #c7a0ff; }
+  .ach-card p { font-size: 11px; color: #8998ba; margin: 0 0 8px; min-height: 30px; }
+  .ach-reward { font-size: 12px; color: #10b981; font-weight: bold; }
+  .ach-status { position: absolute; top: 10px; left: 10px; font-size: 18px; }
+  .ach-locked { filter: grayscale(1); opacity: .6; }
+  .summary-box {
+    background: linear-gradient(135deg, #2a1b50, #101831);
+    border: 1px solid #5a3b83;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .summary-box h2 { margin: 0; font-size: 16px; }
+  .summary-box .count { font-size: 32px; font-weight: 800; color: #ffca62; }
+</style>
+</head>
+<body data-page="achievements">
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="bolt">ϟ</span><span>Speedora<small>Play. Complete. Earn.</small></span></a>
+    <nav class="nav">
+      <a href="index.html">⌂ Home</a>
+      <a href="games.html">🎮 Games</a>
+      <a href="earn.html">▤ Earn</a>
+      <a href="rewards.html">🎁 Rewards</a>
+      <a href="wheel.html">🎡 Wheel</a>
+      <a href="achievements.html" class="active">🏅 Achievements</a>
+      <a href="leaderboard.html">🏆 Leaderboard</a>
+      <a href="wallet.html">▣ Wallet</a>
+      <a href="profile.html">♙ Profile</a>
+    </nav>
+    <div class="sidefoot">© 2026 Speedora</div>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <button class="menu" id="menu">☰</button>
+      <div class="crumb">Achievements</div>
+      <div class="actions"><a class="user" href="profile.html"><span class="avatar">A</span><span><b id="userName">Player</b><br><small id="userBalance">0 pts</small></span></a></div>
+    </header>
+    <main class="content">
+      <div class="pagehead">
+        <div><span class="eyebrow">TROPHIES</span><h1>الإنجازات</h1><p>اجمع الشارات واحصل على مكافآت إضافية</p></div>
+      </div>
+
+      <div class="summary-box">
+        <div>
+          <h2>الشارات المُفتوحة</h2>
+          <p style="margin:4px 0 0;font-size:12px;color:#b5b7d3" id="summaryText">-</p>
+        </div>
+        <div class="count" id="achCount">0 / 0</div>
+      </div>
+
+      <div class="ach-grid" id="achGrid"></div>
+    </main>
+  </div>
+</div>
+
+<script src="core.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => Number(n || 0).toLocaleString('en-US');
+
+function render() {
+  const s = Speedora.get();
+  const achs = Speedora.getAchievements();
+  const unlocked = achs.filter(a => a.unlocked).length;
+  const total = achs.length;
+  const totalRewards = achs.filter(a => a.unlocked).reduce((sum, a) => sum + a.reward, 0);
+
+  $('achCount').textContent = `${unlocked} / ${total}`;
+  $('summaryText').textContent = `حصلت على ${fmt(totalRewards)} نقطة من الإنجازات`;
+  $('userBalance').textContent = fmt(s.balance) + ' pts';
+  $('userName').textContent = 'Player';
+
+  const grid = $('achGrid');
+  grid.innerHTML = achs.map(a => `
+    <div class="ach-card ${a.unlocked ? 'unlocked' : 'ach-locked'}">
+      <div class="ach-status">${a.unlocked ? '✅' : '🔒'}</div>
+      <div class="ach-icon">${a.icon}</div>
+      <h3>${a.title}</h3>
+      <p>${a.desc}</p>
+      <div class="ach-reward">+${fmt(a.reward)} نقطة</div>
+    </div>
+  `).join('');
+}
+
+window.addEventListener('pointsUpdated', render);
+window.addEventListener('achievementUnlocked', render);
+$('menu')?.addEventListener('click', () => document.querySelector('.sidebar')?.classList.toggle('open'));
+render();
+</script>
+</body>
+</html>
