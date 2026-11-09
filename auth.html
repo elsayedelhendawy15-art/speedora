@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تسجيل الدخول | Speedora</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+  body { background: #080b19; color: white; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background-image: radial-gradient(circle at top, #2a1b50 0%, transparent 60%); }
+  .auth-box { background: #101831; border: 1px solid #332b50; border-radius: 24px; padding: 30px; width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
+  .auth-box::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(117,60,255,0.1) 0%, transparent 60%); z-index: 0; }
+  .content { position: relative; z-index: 1; }
+  .logo { text-align: center; margin-bottom: 24px; }
+  .logo-icon { font-size: 50px; color: #a855f7; line-height: 1; text-shadow: 0 0 20px #a855f7; }
+  .logo h1 { font-size: 24px; margin-top: 8px; }
+  .logo h1 span { color: #a855f7; }
+  .tabs { display: flex; background: #080b19; border-radius: 12px; padding: 5px; margin-bottom: 24px; }
+  .tab { flex: 1; padding: 10px; text-align: center; font-weight: bold; font-size: 14px; cursor: pointer; border-radius: 8px; color: #8998ba; transition: 0.3s; }
+  .tab.active { background: #211b3b; color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+  .form-group { margin-bottom: 16px; }
+  label { display: block; font-size: 12px; color: #aab7d4; margin-bottom: 6px; font-weight: 600; }
+  input { width: 100%; padding: 14px; background: #080b19; border: 1px solid #332b50; border-radius: 12px; color: white; font-size: 14px; outline: none; transition: 0.3s; }
+  input:focus { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,0.2); }
+  button { width: 100%; padding: 14px; border: none; border-radius: 12px; background: linear-gradient(100deg, #d43bea, #642cff); color: white; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+  button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(100,44,255,0.3); }
+  button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .error-msg { color: #ef4444; font-size: 12px; text-align: center; margin-bottom: 10px; min-height: 18px; }
+</style>
+</head>
+<body>
+
+<div class="auth-box">
+  <div class="content">
+    <div class="logo">
+      <div class="logo-icon">ϟ</div>
+      <h1>Speed<span>ora</span></h1>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" id="tabLogin">تسجيل الدخول</div>
+      <div class="tab" id="tabSignup">حساب جديد</div>
+    </div>
+
+    <div id="errorMsg" class="error-msg"></div>
+
+    <form id="authForm">
+      <div class="form-group" id="nameGroup" style="display: none;">
+        <label>الاسم</label>
+        <input type="text" id="name" placeholder="اكتب اسمك">
+      </div>
+      <div class="form-group">
+        <label>البريد الإلكتروني</label>
+        <input type="email" id="email" placeholder="you@example.com" required>
+      </div>
+      <div class="form-group">
+        <label>كلمة المرور</label>
+        <input type="password" id="password" placeholder="8 أحرف على الأقل" required minlength="8">
+      </div>
+      <button type="submit" id="submitBtn">دخول</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  const API_URL = 'https://speedora-api.elsayedelhendawy15.workers.dev';
+  const $ = id => document.getElementById(id);
+  
+  let isLogin = true;
+
+  $('tabLogin').onclick = () => {
+    isLogin = true;
+    $('tabLogin').classList.add('active'); $('tabSignup').classList.remove('active');
+    $('nameGroup').style.display = 'none';
+    $('submitBtn').textContent = 'دخول';
+    $('errorMsg').textContent = '';
+  };
+
+  $('tabSignup').onclick = () => {
+    isLogin = false;
+    $('tabSignup').classList.add('active'); $('tabLogin').classList.remove('active');
+    $('nameGroup').style.display = 'block';
+    $('submitBtn').textContent = 'إنشاء حساب';
+    $('errorMsg').textContent = '';
+  };
+
+  $('authForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const email = $('email').value.trim();
+    const password = $('password').value;
+    const name = $('name').value.trim();
+
+    if (!isLogin && !name) { $('errorMsg').textContent = 'اكتب اسمك أولاً'; return; }
+
+    $('submitBtn').disabled = true;
+    $('submitBtn').textContent = 'جارٍ التنفيذ...';
+    $('errorMsg').textContent = '';
+
+    try {
+      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
+      const body = isLogin ? { email, password } : { email, password, name };
+
+      const res = await fetch(API_URL + endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || 'حدث خطأ');
+
+      // حفظ الجلسة في المتصفح
+      localStorage.setItem('speedora_user_id', data.userId);
+      localStorage.setItem('speedora_user_name', data.name);
+      localStorage.setItem('speedora_state', JSON.stringify(data.state));
+
+      // التوجه للموقع
+      window.location.href = 'index.html';
+
+    } catch (err) {
+      $('errorMsg').textContent = err.message;
+      $('submitBtn').disabled = false;
+      $('submitBtn').textContent = isLogin ? 'دخول' : 'إنشاء حساب';
+    }
+  };
+</script>
+</body>
+</html>
