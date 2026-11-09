@@ -1,17 +1,18 @@
 /* ==========================================
-   Speedora — Core Engine v7
-   (نظام الإحالة الكامل + المزامنة السحابية)
+   Speedora — Core Engine v8 (Auth System)
    ========================================== */
 (function () {
   const KEY = 'speedora_state';
   const API_URL = 'https://speedora-api.elsayedelhendawy15.workers.dev';
   
   let USER_ID = localStorage.getItem('speedora_user_id');
-  if (!USER_ID) {
-    USER_ID = 'user_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
-    localStorage.setItem('speedora_user_id', USER_ID);
-  }
   let syncTimeout = null;
+
+  // حماية الصفحات
+  if (!USER_ID && !window.location.pathname.includes('auth.html')) {
+    window.location.href = 'auth.html';
+    return; // وقف التنفيذ هنا
+  }
 
   const DEFAULTS = {
     balance: 0, earned: 0, redeemed: 0, activity: [],
@@ -24,7 +25,8 @@
     welcomeShown: false,
     referralCode: null,
     referredBy: null,
-    referrals: [] // 🆕 مصفوفة لحفظ الإحالات
+    referrals: [],
+    name: 'Player'
   };
 
   const POINTS_PER_EGP = 100;
@@ -33,23 +35,16 @@
   const LEVEL_NAMES = ['مبتدئ','نشيط','محترف','خبير','متمكن','أسطورة','نجم','بطل','أسطوري','خارق','لا يُهزم'];
 
   const WHEEL_PRIZES = [
-    { label: '+50', points: 50, color: '#ef4444' },
-    { label: '+100', points: 100, color: '#f59e0b' },
-    { label: 'حظ أوفر', points: 0, color: '#6b7280' },
-    { label: '+200', points: 200, color: '#10b981' },
-    { label: '+500', points: 500, color: '#3b82f6' },
-    { label: '+50', points: 50, color: '#ef4444' },
-    { label: '+1000', points: 1000, color: '#8b5cf6' },
-    { label: '+100', points: 100, color: '#f59e0b' }
+    { label: '+50', points: 50, color: '#ef4444' }, { label: '+100', points: 100, color: '#f59e0b' },
+    { label: 'حظ أوفر', points: 0, color: '#6b7280' }, { label: '+200', points: 200, color: '#10b981' },
+    { label: '+500', points: 500, color: '#3b82f6' }, { label: '+50', points: 50, color: '#ef4444' },
+    { label: '+1000', points: 1000, color: '#8b5cf6' }, { label: '+100', points: 100, color: '#f59e0b' }
   ];
 
   const SCRATCH_PRIZES = [
-    { label: 'حظ أوفر', points: 0, weight: 30 },
-    { label: '+25', points: 25, weight: 25 },
-    { label: '+50', points: 50, weight: 20 },
-    { label: '+100', points: 100, weight: 12 },
-    { label: '+200', points: 200, weight: 8 },
-    { label: '+500', points: 500, weight: 4 },
+    { label: 'حظ أوفر', points: 0, weight: 30 }, { label: '+25', points: 25, weight: 25 },
+    { label: '+50', points: 50, weight: 20 }, { label: '+100', points: 100, weight: 12 },
+    { label: '+200', points: 200, weight: 8 }, { label: '+500', points: 500, weight: 4 },
     { label: '+1500', points: 1500, weight: 1 }
   ];
 
@@ -82,45 +77,18 @@
   ];
 
   const BOTS = [
-    { name: 'ShadowKing', avatar: 'S', base: 24680 },
-    { name: 'LunaQueen', avatar: 'L', base: 19450 },
-    { name: 'CryptoGamer', avatar: 'C', base: 17632 },
-    { name: 'FastEagle', avatar: 'F', base: 15420 },
-    { name: 'PixelPro', avatar: 'P', base: 13278 },
-    { name: 'NeonHunter', avatar: 'N', base: 11890 },
-    { name: 'StarNinja', avatar: '★', base: 9456 },
-    { name: 'IceWolf', avatar: 'I', base: 8234 },
+    { name: 'ShadowKing', avatar: 'S', base: 24680 }, { name: 'LunaQueen', avatar: 'L', base: 19450 },
+    { name: 'CryptoGamer', avatar: 'C', base: 17632 }, { name: 'FastEagle', avatar: 'F', base: 15420 },
+    { name: 'PixelPro', avatar: 'P', base: 13278 }, { name: 'NeonHunter', avatar: 'N', base: 11890 },
+    { name: 'StarNinja', avatar: '★', base: 9456 }, { name: 'IceWolf', avatar: 'I', base: 8234 },
     { name: 'FireDragon', avatar: 'D', base: 6789 }
   ];
-
-  function generateRefCode() {
-    return 'SPD-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-  }
 
   const load = () => {
     try {
       const raw = JSON.parse(localStorage.getItem(KEY));
-      if (!raw) {
-        const fresh = { ...DEFAULTS };
-        fresh.balance = 1250;
-        fresh.earned = 1250;
-        fresh.welcomeShown = true;
-        fresh.referralCode = generateRefCode();
-        fresh.activity = [{ type: 'bonus', title: 'مكافأة الترحيب', points: 1250, date: new Date().toISOString() }];
-        localStorage.setItem(KEY, JSON.stringify(fresh));
-        return fresh;
-      }
-      const s = { ...DEFAULTS, ...raw };
-      if (!s.referralCode) {
-        s.referralCode = generateRefCode();
-        localStorage.setItem(KEY, JSON.stringify(s));
-      }
-      if (s.balance > 0 && s.earned === 0 && (!s.activity || s.activity.length === 0)) {
-        s.earned = s.balance;
-        s.activity = [{ type: 'bonus', title: 'مكافأة الترحيب', points: s.balance, date: new Date().toISOString() }];
-        localStorage.setItem(KEY, JSON.stringify(s));
-      }
-      return s;
+      if (!raw) return { ...DEFAULTS };
+      return { ...DEFAULTS, ...raw };
     } catch { return { ...DEFAULTS }; }
   };
 
@@ -150,17 +118,14 @@
     addPoints(amount, title, type = 'game') {
       const s = load();
       const oldLevel = s.level;
-      s.balance += amount;
-      s.earned += amount;
+      s.balance += amount; s.earned += amount;
       s.activity.unshift({ type, title, points: amount, date: new Date().toISOString() });
       if (s.activity.length > 200) s.activity = s.activity.slice(0, 200);
       if (type === 'game') s.totalGamesPlayed++;
       if (type === 'task') s.totalTasksDone++;
       s.level = calcLevel(s.earned);
       save(s);
-      if (s.level > oldLevel) {
-        window.dispatchEvent(new CustomEvent('levelUp', { detail: { level: s.level, name: LEVEL_NAMES[s.level - 1] } }));
-      }
+      if (s.level > oldLevel) window.dispatchEvent(new CustomEvent('levelUp', { detail: { level: s.level, name: LEVEL_NAMES[s.level - 1] } }));
       this.checkAchievements();
       return s;
     },
@@ -168,8 +133,7 @@
     spendPoints(amount, title, type = 'redeem') {
       const s = load();
       if (s.balance < amount) return { error: 'رصيدك غير كافٍ' };
-      s.balance -= amount;
-      s.redeemed += amount;
+      s.balance -= amount; s.redeemed += amount;
       s.activity.unshift({ type, title, points: -amount, date: new Date().toISOString() });
       if (s.activity.length > 200) s.activity = s.activity.slice(0, 200);
       save(s);
@@ -186,16 +150,10 @@
       const s = load();
       if (!this.canClaimDaily()) return { error: 'استلمت النهاردة بالفعل. ارجع بكرة!' };
       let ns = 1;
-      if (s.lastClaim) {
-        const d = Math.floor((new Date() - new Date(s.lastClaim)) / 86400000);
-        ns = d === 1 ? s.streak + 1 : 1;
-      }
+      if (s.lastClaim) { const d = Math.floor((new Date() - new Date(s.lastClaim)) / 86400000); ns = d === 1 ? s.streak + 1 : 1; }
       const bonus = streakBonus(ns);
       this.addPoints(bonus, `مكافأة يومية (${ns} يوم)`, 'bonus');
-      const s2 = load();
-      s2.streak = ns;
-      s2.lastClaim = new Date().toISOString();
-      save(s2);
+      const s2 = load(); s2.streak = ns; s2.lastClaim = new Date().toISOString(); save(s2);
       return { ok: true, bonus, streak: ns };
     },
 
@@ -209,9 +167,7 @@
       if (!this.canSpin()) return { error: 'لعبت النهاردة. ارجع بكرة!' };
       const idx = Math.floor(Math.random() * WHEEL_PRIZES.length);
       const prize = WHEEL_PRIZES[idx];
-      const s = load();
-      s.lastSpin = new Date().toISOString();
-      save(s);
+      const s = load(); s.lastSpin = new Date().toISOString(); save(s);
       if (prize.points > 0) this.addPoints(prize.points, 'عجلة الحظ', 'wheel');
       return { ok: true, index: idx, prize };
     },
@@ -224,15 +180,9 @@
     scratch() {
       if (!this.canScratch()) return { error: 'جربت النهاردة. ارجع بكرة!' };
       const totalWeight = SCRATCH_PRIZES.reduce((sum, p) => sum + p.weight, 0);
-      let r = Math.random() * totalWeight;
-      let picked = SCRATCH_PRIZES[0];
-      for (const p of SCRATCH_PRIZES) {
-        if (r < p.weight) { picked = p; break; }
-        r -= p.weight;
-      }
-      const s = load();
-      s.lastScratch = new Date().toISOString();
-      save(s);
+      let r = Math.random() * totalWeight; let picked = SCRATCH_PRIZES[0];
+      for (const p of SCRATCH_PRIZES) { if (r < p.weight) { picked = p; break; } r -= p.weight; }
+      const s = load(); s.lastScratch = new Date().toISOString(); save(s);
       if (picked.points > 0) this.addPoints(picked.points, 'سكراتش كارد', 'scratch');
       return { ok: true, prize: picked };
     },
@@ -248,16 +198,12 @@
         const won = Math.floor(Math.random() * 2800) + 200;
         this.spendPoints(reward.cost, `شراء: ${reward.title}`, 'purchase');
         this.addPoints(won, `فتح صندوق الغموض`, 'bonus');
-        const s2 = load();
-        s2.purchasedRewards.push({ id: reward.id, title: reward.title, date: new Date().toISOString() });
-        save(s2);
+        const s2 = load(); s2.purchasedRewards.push({ id: reward.id, title: reward.title, date: new Date().toISOString() }); save(s2);
         return { ok: true, reward, mysteryWon: won };
       }
 
       this.spendPoints(reward.cost, `شراء: ${reward.title}`, 'purchase');
-      const s2 = load();
-      s2.purchasedRewards.push({ id: reward.id, title: reward.title, date: new Date().toISOString() });
-      save(s2);
+      const s2 = load(); s2.purchasedRewards.push({ id: reward.id, title: reward.title, date: new Date().toISOString() }); save(s2);
       return { ok: true, reward };
     },
     getPurchases() { return load().purchasedRewards || []; },
@@ -268,14 +214,11 @@
         const newOnes = ACHIEVEMENTS.filter(a => !s.unlockedAchievements.includes(a.id) && a.condition(s));
         if (!newOnes.length) break;
         newOnes.forEach(a => {
-          s.unlockedAchievements.push(a.id);
-          s.balance += a.reward;
-          s.earned += a.reward;
+          s.unlockedAchievements.push(a.id); s.balance += a.reward; s.earned += a.reward;
           s.activity.unshift({ type: 'achievement', title: `إنجاز: ${a.title}`, points: a.reward, date: new Date().toISOString() });
           window.dispatchEvent(new CustomEvent('achievementUnlocked', { detail: a }));
         });
-        s.level = calcLevel(s.earned);
-        save(s);
+        s.level = calcLevel(s.earned); save(s);
       }
     },
     getAchievements() {
@@ -287,12 +230,8 @@
       const s = load();
       const today = new Date().toDateString();
       if (s.lastBotUpdate !== today) {
-        BOTS.forEach(b => {
-          if (!s.bots[b.name]) s.bots[b.name] = b.base;
-          s.bots[b.name] += 50 + Math.floor(Math.random() * 450);
-        });
-        s.lastBotUpdate = today;
-        save(s);
+        BOTS.forEach(b => { if (!s.bots[b.name]) s.bots[b.name] = b.base; s.bots[b.name] += 50 + Math.floor(Math.random() * 450); });
+        s.lastBotUpdate = today; save(s);
       }
       const all = BOTS.map(b => ({ name: b.name, avatar: b.avatar, points: s.bots[b.name] || b.base, isUser: false }));
       all.push({ name: userName, avatar: 'A', points: s.balance, isUser: true });
@@ -303,46 +242,35 @@
     getUserName() { return localStorage.getItem('speedora_user_name') || 'Player'; },
     setUserName(name) {
       localStorage.setItem('speedora_user_name', name);
+      const s = load(); s.name = name; save(s); // تحديث الاسم في السيرفر
       window.dispatchEvent(new CustomEvent('userNameChanged', { detail: name }));
     },
     getReferralCode() { return load().referralCode; },
 
     gamesPlayedToday() {
-      const s = load();
-      const today = new Date().toDateString();
+      const s = load(); const today = new Date().toDateString();
       return (s.activity || []).filter(a => a.type === 'game' && new Date(a.date).toDateString() === today).length;
     },
-    spunToday() {
-      const s = load();
-      return s.lastSpin && new Date(s.lastSpin).toDateString() === new Date().toDateString();
-    },
-    claimedDailyToday() {
-      const s = load();
-      return s.lastClaim && new Date(s.lastClaim).toDateString() === new Date().toDateString();
-    },
+    spunToday() { const s = load(); return s.lastSpin && new Date(s.lastSpin).toDateString() === new Date().toDateString(); },
+    claimedDailyToday() { const s = load(); return s.lastClaim && new Date(s.lastClaim).toDateString() === new Date().toDateString(); },
     taskClaimedToday(taskId) {
-      const s = load();
-      const today = new Date().toDateString();
+      const s = load(); const today = new Date().toDateString();
       return (s.activity || []).some(a => a.type === 'task' && a.title === taskId && new Date(a.date).toDateString() === today);
     },
 
     getLevelInfo() {
-      const s = load();
-      const lvl = calcLevel(s.earned);
-      const cur = LEVELS[lvl - 1] || 0;
-      const nxt = LEVELS[lvl] !== undefined ? LEVELS[lvl] : null;
+      const s = load(); const lvl = calcLevel(s.earned);
+      const cur = LEVELS[lvl - 1] || 0; const nxt = LEVELS[lvl] !== undefined ? LEVELS[lvl] : null;
       if (nxt === null) return { level: lvl, name: LEVEL_NAMES[lvl - 1] || 'أسطوري', current: cur, next: null, progress: 100, remaining: 0, isMax: true };
       const rangeSize = nxt - cur;
       const progress = rangeSize > 0 ? Math.min(100, Math.max(0, ((s.earned - cur) / rangeSize) * 100)) : 100;
-      const remaining = Math.max(0, nxt - s.earned);
-      return { level: lvl, name: LEVEL_NAMES[lvl - 1] || 'أسطوري', current: cur, next: nxt, progress: progress, remaining: remaining, isMax: false };
+      return { level: lvl, name: LEVEL_NAMES[lvl - 1] || 'أسطوري', current: cur, next: nxt, progress, remaining: Math.max(0, nxt - s.earned), isMax: false };
     },
     getConversion: () => ({ rate: POINTS_PER_EGP, minRedeem: MIN_REDEEM }),
     streakBonus,
 
     getActivityStats() {
-      const s = load();
-      const acts = s.activity || [];
+      const s = load(); const acts = s.activity || [];
       return {
         totalEarned: acts.filter(a => a.points > 0).reduce((sum, a) => sum + a.points, 0),
         totalSpent: acts.filter(a => a.points < 0).reduce((sum, a) => sum + Math.abs(a.points), 0),
@@ -353,8 +281,7 @@
       };
     },
     getActivityByType(type) {
-      const s = load();
-      const acts = s.activity || [];
+      const s = load(); const acts = s.activity || [];
       if (type === 'all') return acts;
       if (type === 'earned') return acts.filter(a => a.points > 0);
       if (type === 'spent') return acts.filter(a => a.points < 0);
@@ -362,27 +289,19 @@
     },
 
     isSoundOn() { return localStorage.getItem('speedora_sound') !== 'off'; },
-    toggleSound() {
-      const on = !this.isSoundOn();
-      localStorage.setItem('speedora_sound', on ? 'on' : 'off');
-      return on;
-    },
+    toggleSound() { const on = !this.isSoundOn(); localStorage.setItem('speedora_sound', on ? 'on' : 'off'); return on; },
     playSound(type) {
       if (!this.isSoundOn()) return;
       try {
         if (!window._audioCtx) window._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const ctx = window._audioCtx;
-        const now = ctx.currentTime;
+        const ctx = window._audioCtx; const now = ctx.currentTime;
         const notes = { point: [523.25, 659.25, 783.99], success: [523.25, 659.25, 783.99, 1046.5], fail: [329.63, 261.63], spin: [261.63, 329.63, 392.00, 523.25], achievement: [659.25, 783.99, 987.77, 1318.51] };
         const seq = notes[type] || notes.point;
         seq.forEach((freq, i) => {
           const osc = ctx.createOscillator(); const gain = ctx.createGain();
           osc.type = 'sine'; osc.frequency.value = freq;
-          gain.gain.setValueAtTime(0, now + i * 0.08);
-          gain.gain.linearRampToValueAtTime(0.15, now + i * 0.08 + 0.01);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.25);
-          osc.connect(gain); gain.connect(ctx.destination);
-          osc.start(now + i * 0.08); osc.stop(now + i * 0.08 + 0.3);
+          gain.gain.setValueAtTime(0, now + i * 0.08); gain.gain.linearRampToValueAtTime(0.15, now + i * 0.08 + 0.01); gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.25);
+          osc.connect(gain); gain.connect(ctx.destination); osc.start(now + i * 0.08); osc.stop(now + i * 0.08 + 0.3);
         });
       } catch (e) {}
     },
@@ -402,9 +321,7 @@
       const names = ['أحمد', 'محمد', 'سارة', 'ياسمين', 'علي', 'فاطمة', 'حسن', 'مريم', 'كريم', 'نور'];
       const actions = [{ icon: '🎮', text: 'كسب نقاط من لعبة' }, { icon: '🎡', text: 'لف العجلة' }, { icon: '🎁', text: 'استلم المكافأة اليومية' }, { icon: '🏅', text: 'فتح إنجاز جديد' }, { icon: '🛒', text: 'اشترى مكافأة' }, { icon: '🎫', text: 'فاز في سكراتش' }];
       const items = [];
-      for (let i = 0; i < 8; i++) {
-        items.push({ name: names[Math.floor(Math.random() * names.length)], action: actions[Math.floor(Math.random() * actions.length)].icon, text: actions[Math.floor(Math.random() * actions.length)].text, pts: [50, 100, 200, 300, 500, 1000][Math.floor(Math.random() * 6)], minsAgo: Math.floor(Math.random() * 15) + 1 });
-      }
+      for (let i = 0; i < 8; i++) items.push({ name: names[Math.floor(Math.random() * names.length)], action: actions[Math.floor(Math.random() * actions.length)].icon, text: actions[Math.floor(Math.random() * actions.length)].text, pts: [50, 100, 200, 300, 500, 1000][Math.floor(Math.random() * 6)], minsAgo: Math.floor(Math.random() * 15) + 1 });
       return items;
     }
   };
@@ -434,6 +351,7 @@
         const local = JSON.parse(localStorage.getItem(KEY) || '{}');
         if (!local.earned || (data.state.earned > local.earned)) {
           localStorage.setItem(KEY, JSON.stringify(data.state));
+          if (data.name) localStorage.setItem('speedora_user_name', data.name);
           window.dispatchEvent(new CustomEvent('pointsUpdated', { detail: data.state }));
         }
       }
@@ -446,30 +364,21 @@
     if (incomingRef) {
       const s = load();
       if (!s.referredBy && s.totalGamesPlayed === 0 && s.balance <= 1250) {
-        s.referredBy = incomingRef;
-        s.balance += 500;
-        s.earned += 500;
+        s.referredBy = incomingRef; s.balance += 500; s.earned += 500;
         s.activity.unshift({ type: 'bonus', title: 'مكافأة الترحيب (كود إحالة)', points: 500, date: new Date().toISOString() });
-        save(s);
-        window.history.replaceState({}, document.title, window.location.pathname);
+        save(s); window.history.replaceState({}, document.title, window.location.pathname);
         if (window.Speedora) window.Speedora.showToast('🎉 تم إضافة 500 نقطة من كود الإحالة!', 'success');
         
         fetch(`${API_URL}/api/referral/apply`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            newUserId: USER_ID, 
-            newUserName: Speedora.getUserName(),
-            referralCode: incomingRef 
-          })
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ newUserId: USER_ID, newUserName: Speedora.getUserName(), referralCode: incomingRef })
         }).catch(e => console.warn('فشل تطبيق الإحالة', e));
       }
     }
   }
 
   window.addEventListener('DOMContentLoaded', () => {
-    setTimeout(loadFromCloud, 500); 
-    setTimeout(processReferral, 1000); 
+    setTimeout(loadFromCloud, 500); setTimeout(processReferral, 1000); 
   });
 
 })();
