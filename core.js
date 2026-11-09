@@ -1,6 +1,6 @@
 /* ==========================================
-   Speedora — Core Engine v6
-   (نظام الإحالة + المزامنة السحابية)
+   Speedora — Core Engine v7
+   (نظام الإحالة الكامل + المزامنة السحابية)
    ========================================== */
 (function () {
   const KEY = 'speedora_state';
@@ -23,7 +23,8 @@
     purchasedRewards: [],
     welcomeShown: false,
     referralCode: null,
-    referredBy: null
+    referredBy: null,
+    referrals: [] // 🆕 مصفوفة لحفظ الإحالات
   };
 
   const POINTS_PER_EGP = 100;
@@ -452,10 +453,15 @@
         save(s);
         window.history.replaceState({}, document.title, window.location.pathname);
         if (window.Speedora) window.Speedora.showToast('🎉 تم إضافة 500 نقطة من كود الإحالة!', 'success');
+        
         fetch(`${API_URL}/api/referral/apply`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ newUserId: USER_ID, referralCode: incomingRef })
+          body: JSON.stringify({ 
+            newUserId: USER_ID, 
+            newUserName: Speedora.getUserName(),
+            referralCode: incomingRef 
+          })
         }).catch(e => console.warn('فشل تطبيق الإحالة', e));
       }
     }
