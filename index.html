@@ -6,8 +6,11 @@
 <title>Speedora | العب واكسب</title>
 <link rel="stylesheet" href="styles.css">
 <script>
-  // 🆕 كود تحويل فوري: لو مفيش يوزر مسجل، حوله لصفحة الدخول فوراً
-  if (!localStorage.getItem('speedora_user_id')) {
+  // 🆕 كود مسح البيانات والتحويل الفوري
+  if (window.location.search.includes('reset=1')) {
+    localStorage.clear();
+    window.location.replace('auth.html');
+  } else if (!localStorage.getItem('speedora_user_id')) {
     window.location.replace('auth.html');
   }
 </script>
@@ -114,7 +117,6 @@
   </div>
 </div>
 
-<!-- 🆕 تم تحديث إصدار الكود لـ v=10 لتجاوز الكاش -->
 <script src="core.js?v=10"></script>
 <script>
 const $ = id => document.getElementById(id);
