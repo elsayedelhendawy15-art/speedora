@@ -1,17 +1,18 @@
 /* ==========================================
-   Speedora — Core Engine v3
-   (نقاط + يومية + level + عجلة + إنجازات + leaderboard + متجر + سكراتش + إشعارات حية)
+   Speedora — Core Engine v4
+   (إصلاح المستويات + تحسين السجل + وضوح Demo)
    ========================================== */
 (function () {
   const KEY = 'speedora_state';
   const DEFAULTS = {
-    balance: 1250, earned: 0, redeemed: 0, activity: [],
+    balance: 0, earned: 0, redeemed: 0, activity: [],
     streak: 0, lastClaim: null, level: 1,
     totalGamesPlayed: 0, totalTasksDone: 0,
     lastSpin: null, lastScratch: null,
     unlockedAchievements: [],
     bots: {}, lastBotUpdate: null,
-    purchasedRewards: []
+    purchasedRewards: [],
+    welcomeShown: false
   };
 
   const POINTS_PER_EGP = 100;
@@ -81,9 +82,34 @@
   ];
 
   const load = () => {
-    try { return { ...DEFAULTS, ...(JSON.parse(localStorage.getItem(KEY)) || {}) }; }
-    catch { return { ...DEFAULTS }; }
+    try {
+      const raw = JSON.parse(localStorage.getItem(KEY));
+      if (!raw) {
+        // أول زيارة - مكافأة ترحيب
+        const fresh = { ...DEFAULTS };
+        fresh.balance = 1250;
+        fresh.earned = 1250;
+        fresh.welcomeShown = true;
+        fresh.activity = [{
+          type: 'bonus',
+          title: 'مكافأة الترحيب',
+          points: 1250,
+          date: new Date().toISOString()
+        }];
+        localStorage.setItem(KEY, JSON.stringify(fresh));
+        return fresh;
+      }
+      const s = { ...DEFAULTS, ...raw };
+      // Migration: رصيد بدون مكتسب
+      if (s.balance > 0 && s.earned === 0 && (!s.activity || s.activity.length === 0)) {
+        s.earned = s.balance;
+        s.activity = [{ type: 'bonus', title: 'مكافأة الترحيب', points: s.balance, date: new Date().toISOString() }];
+        localStorage.setItem(KEY, JSON.stringify(s));
+      }
+      return s;
+    } catch { return { ...DEFAULTS }; }
   };
+
   const save = (s) => {
     localStorage.setItem(KEY, JSON.stringify(s));
     window.dispatchEvent(new CustomEvent('pointsUpdated', { detail: s }));
@@ -101,7 +127,7 @@
       s.balance += amount;
       s.earned += amount;
       s.activity.unshift({ type, title, points: amount, date: new Date().toISOString() });
-      if (s.activity.length > 100) s.activity = s.activity.slice(0, 100);
+      if (s.activity.length > 200) s.activity = s.activity.slice(0, 200);
       if (type === 'game') s.totalGamesPlayed++;
       if (type === 'task') s.totalTasksDone++;
       s.level = calcLevel(s.earned);
@@ -113,12 +139,13 @@
       return s;
     },
 
-    spendPoints(amount, title) {
+    spendPoints(amount, title, type = 'redeem') {
       const s = load();
       if (s.balance < amount) return { error: 'رصيدك غير كافٍ' };
       s.balance -= amount;
       s.redeemed += amount;
-      s.activity.unshift({ type: 'redeem', title, points: -amount, date: new Date().toISOString() });
+      s.activity.unshift({ type, title, points: -amount, date: new Date().toISOString() });
+      if (s.activity.length > 200) s.activity = s.activity.slice(0, 200);
       save(s);
       return { ok: true, state: s };
     },
@@ -146,7 +173,6 @@
       return { ok: true, bonus, streak: ns };
     },
 
-    /* ===== Wheel ===== */
     getWheelPrizes: () => WHEEL_PRIZES,
     canSpin() {
       const s = load();
@@ -164,7 +190,6 @@
       return { ok: true, index: idx, prize };
     },
 
-    /* ===== Scratch Card ===== */
     canScratch() {
       const s = load();
       if (!s.lastScratch) return true;
@@ -186,35 +211,31 @@
       return { ok: true, prize: picked };
     },
 
-    /* ===== Store ===== */
     getStore: () => REWARDS_STORE,
     purchase(rewardId) {
       const reward = REWARDS_STORE.find(r => r.id === rewardId);
       if (!reward) return { error: 'المكافأة غير موجودة' };
       const s = load();
       if (s.balance < reward.cost) return { error: `محتاج ${this.formatNum(reward.cost - s.balance)} نقطة إضافية` };
-      
-      // Mystery box - يرجع نقاط عشوائية
+
       if (reward.id === 'mystery_box') {
         const won = Math.floor(Math.random() * 2800) + 200;
-        this.spendPoints(reward.cost, `شراء: ${reward.title}`);
+        this.spendPoints(reward.cost, `شراء: ${reward.title}`, 'purchase');
         this.addPoints(won, `فتح صندوق الغموض`, 'bonus');
         const s2 = load();
-        s2.purchasedRewards.push({ id: reward.id, date: new Date().toISOString() });
+        s2.purchasedRewards.push({ id: reward.id, title: reward.title, date: new Date().toISOString() });
         save(s2);
         return { ok: true, reward, mysteryWon: won };
       }
-      
-      this.spendPoints(reward.cost, `شراء: ${reward.title}`);
+
+      this.spendPoints(reward.cost, `شراء: ${reward.title}`, 'purchase');
       const s2 = load();
       s2.purchasedRewards.push({ id: reward.id, title: reward.title, date: new Date().toISOString() });
       save(s2);
-      
       return { ok: true, reward };
     },
     getPurchases() { return load().purchasedRewards || []; },
 
-    /* ===== Achievements ===== */
     checkAchievements() {
       for (let i = 0; i < 5; i++) {
         const s = load();
@@ -236,7 +257,6 @@
       return ACHIEVEMENTS.map(a => ({ ...a, unlocked: s.unlockedAchievements.includes(a.id) }));
     },
 
-    /* ===== Leaderboard ===== */
     getLeaderboard(userName = 'أنت') {
       const s = load();
       const today = new Date().toDateString();
@@ -254,7 +274,6 @@
       return all;
     },
 
-    /* ===== User Name ===== */
     getUserName() { return localStorage.getItem('speedora_user_name') || 'Player'; },
     setUserName(name) {
       localStorage.setItem('speedora_user_name', name);
@@ -269,7 +288,6 @@
       return code;
     },
 
-    /* ===== Today Checks ===== */
     gamesPlayedToday() {
       const s = load();
       const today = new Date().toDateString();
@@ -289,22 +307,64 @@
       return (s.activity || []).some(a => a.type === 'task' && a.title === taskId && new Date(a.date).toDateString() === today);
     },
 
-    /* ===== Level Info ===== */
+    /* ===== FIXED: getLevelInfo ===== */
     getLevelInfo() {
       const s = load();
       const lvl = calcLevel(s.earned);
       const cur = LEVELS[lvl - 1] || 0;
-      const nxt = LEVELS[lvl] || (LEVELS[LEVELS.length - 1] + 15000);
+      const nxt = LEVELS[lvl] !== undefined ? LEVELS[lvl] : null;
+
+      if (nxt === null) {
+        return {
+          level: lvl,
+          name: LEVEL_NAMES[lvl - 1] || 'أسطوري',
+          current: cur,
+          next: null,
+          progress: 100,
+          remaining: 0,
+          isMax: true
+        };
+      }
+
+      const rangeSize = nxt - cur;
+      const progress = rangeSize > 0 ? Math.min(100, Math.max(0, ((s.earned - cur) / rangeSize) * 100)) : 100;
+      const remaining = Math.max(0, nxt - s.earned);
+
       return {
-        level: lvl, name: LEVEL_NAMES[lvl - 1] || 'أسطوري',
-        current: cur, next: nxt,
-        progress: Math.min(100, ((s.earned - cur) / (nxt - cur)) * 100)
+        level: lvl,
+        name: LEVEL_NAMES[lvl - 1] || 'أسطوري',
+        current: cur,
+        next: nxt,
+        progress: progress,
+        remaining: remaining,
+        isMax: false
       };
     },
     getConversion: () => ({ rate: POINTS_PER_EGP, minRedeem: MIN_REDEEM }),
     streakBonus,
 
-    /* ===== Sound ===== */
+    /* ===== Activity Summary ===== */
+    getActivityStats() {
+      const s = load();
+      const acts = s.activity || [];
+      return {
+        totalEarned: acts.filter(a => a.points > 0).reduce((sum, a) => sum + a.points, 0),
+        totalSpent: acts.filter(a => a.points < 0).reduce((sum, a) => sum + Math.abs(a.points), 0),
+        gameEarnings: acts.filter(a => a.type === 'game').reduce((sum, a) => sum + a.points, 0),
+        bonusEarnings: acts.filter(a => a.type === 'bonus' || a.type === 'wheel' || a.type === 'scratch').reduce((sum, a) => sum + a.points, 0),
+        achievementEarnings: acts.filter(a => a.type === 'achievement').reduce((sum, a) => sum + a.points, 0),
+        purchaseSpending: acts.filter(a => a.type === 'purchase' || a.type === 'redeem').reduce((sum, a) => sum + Math.abs(a.points), 0)
+      };
+    },
+    getActivityByType(type) {
+      const s = load();
+      const acts = s.activity || [];
+      if (type === 'all') return acts;
+      if (type === 'earned') return acts.filter(a => a.points > 0);
+      if (type === 'spent') return acts.filter(a => a.points < 0);
+      return acts.filter(a => a.type === type);
+    },
+
     isSoundOn() { return localStorage.getItem('speedora_sound') !== 'off'; },
     toggleSound() {
       const on = !this.isSoundOn();
@@ -341,7 +401,6 @@
       } catch (e) {}
     },
 
-    /* ===== Toast ===== */
     showToast(message, type = 'info') {
       const colors = {
         success: 'linear-gradient(135deg, #10b981, #059669)',
@@ -360,7 +419,6 @@
       setTimeout(() => { t.style.transition='opacity .3s'; t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, 3000);
     },
 
-    /* ===== Live Feed ===== */
     getLiveFeed() {
       const names = ['أحمد', 'محمد', 'سارة', 'ياسمين', 'علي', 'فاطمة', 'حسن', 'مريم', 'كريم', 'نور'];
       const actions = [
@@ -383,11 +441,9 @@
     }
   };
 
-  // Animations
   const style = document.createElement('style');
   style.textContent = `
     @keyframes spSlide { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-    @keyframes spSlideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(-100%); opacity: 0; } }
     #speedora-live-bar {
       position: fixed; bottom: 0; left: 0; right: 0;
       background: linear-gradient(90deg, #101831, #1a1042);
@@ -408,18 +464,15 @@
   `;
   document.head.appendChild(style);
 
-  // Live bar auto-init
   window.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('speedora-live-bar')) return;
     const bar = document.createElement('div');
     bar.id = 'speedora-live-bar';
     bar.innerHTML = `<span class="dot"></span><div class="feed" id="spFeed"></div><span style="font-size:10px;opacity:.7">🔴 مباشر</span>`;
     document.body.appendChild(bar);
-    
     const feed = document.getElementById('spFeed');
     const items = window.Speedora.getLiveFeed();
     let idx = 0;
-    
     function showNext() {
       const it = items[idx % items.length];
       feed.innerHTML = `<span>${it.action} <b>${it.name}</b> ${it.text} <b style="color:#10b981">+${it.pts}</b> · قبل ${it.minsAgo} د</span>`;
