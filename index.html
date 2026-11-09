@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Speedora | العب واكسب</title>
 <link rel="stylesheet" href="styles.css">
+<script>
+  // 🆕 كود تحويل فوري: لو مفيش يوزر مسجل، حوله لصفحة الدخول فوراً
+  if (!localStorage.getItem('speedora_user_id')) {
+    window.location.replace('auth.html');
+  }
+</script>
 <style>
   .hero-live { background: radial-gradient(ellipse at 75% 50%, #4d1c9c, transparent 45%), linear-gradient(115deg, #111831, #110d2c); border: 1px solid #3c2b78; border-radius: 20px; padding: 40px 30px; text-align: center; margin-bottom: 16px; position: relative; overflow: hidden; }
   .hero-live::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 20% 80%, rgba(212,59,234,.15), transparent 40%); pointer-events: none; }
@@ -108,7 +114,8 @@
   </div>
 </div>
 
-<script src="core.js"></script>
+<!-- 🆕 تم تحديث إصدار الكود لـ v=10 لتجاوز الكاش -->
+<script src="core.js?v=10"></script>
 <script>
 const $ = id => document.getElementById(id);
 const fmt = n => Number(n || 0).toLocaleString('en-US');
