@@ -1,1 +1,201 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080b19"><meta name="description" content="Preview Speedora reward categories."><title>Rewards | Speedora</title><link rel="stylesheet" href="styles.css"></head><body data-page="rewards"><div class="shell"><aside class="sidebar"><a class="brand" href="index.html"><span class="bolt">ϟ</span><span>Speedora<small>Play. Complete. Earn.</small></span></a><nav class="nav"><a class="" href="index.html">⌂ &nbsp; Home</a><a class="" href="games.html">🎮 &nbsp; Games</a><a class="" href="earn.html">▤ &nbsp; Earn</a><a class="active" href="rewards.html">🎁 &nbsp; Rewards</a><a class="" href="leaderboard.html">🏆 &nbsp; Leaderboard</a><a class="" href="wallet.html">▣ &nbsp; Wallet</a><a class="" href="profile.html">♙ &nbsp; Profile</a><a class="" href="support.html">ⓘ &nbsp; Support</a></nav><div class="vip"><div style="font-size:25px">♛</div><b>VIP Club</b><p>Special events and member perks can be added as the platform grows.</p><a class="btn" href="rewards.html">Explore rewards</a></div><div class="sidefoot">© 2026 Speedora</div></aside><div class="main"><header class="top"><button class="menu" id="menu">☰</button><div class="crumb">Dashboard / Rewards</div><div class="actions"><label class="search">⌕ <input id="search" placeholder="Search this page..."></label><a class="user" href="profile.html"><span class="avatar">A</span><span><b>AlexMaster</b><br><small>Demo profile · Level 1</small></span></a></div></header><main class="content"><div class="pagehead"><div><span class="eyebrow">REWARDS PREVIEW</span><h1>Rewards</h1><p>Explore reward categories before real redemption is available.</p></div><div class="badge">Demo points: <b id="balance">1,250</b></div></div><div class="notice">ⓘ <div><b>Redemption disabled</b><p>No gift cards, cash, or cryptocurrency can be claimed from this prototype.</p></div></div><div class="catalog"><article class="card"><div class="cardcover">🎁</div><div class="cardbody"><span class="badge">SAMPLE</span><h3>Gift card</h3><p>Illustrative digital gift card concept.</p><div class="between"><span class="points">5,000 pts</span><button class="btn redeem" data-name="Gift card">Preview</button></div></div></article><article class="card"><div class="cardcover">ϟ</div><div class="cardbody"><span class="badge">FUTURE OPTION</span><h3>Wallet payout</h3><p>Any cash or USDT payout needs provider and country checks.</p><div class="between"><span class="points">10,000 pts</span><button class="btn redeem" data-name="Wallet payout">Preview</button></div></div></article><article class="card"><div class="cardcover">♛</div><div class="cardbody"><span class="badge">CONCEPT</span><h3>VIP perks</h3><p>Non-cash perks and member features.</p><div class="between"><span class="points">2,000 pts</span><button class="btn redeem" data-name="VIP perks">Preview</button></div></div></article></div><div class="banner"><b>Real rewards come later</b><p>We must confirm a sustainable revenue source, provider terms, country eligibility, and legal/payment requirements before enabling redemption.</p></div><footer class="footer"><a class="brand" href="index.html"><span class="bolt" style="font-size:30px">ϟ</span><span style="font-size:15px">Speedora<small>Play. Complete. Earn.</small></span></a><div><a href="support.html">About</a><a href="support.html#terms">Terms</a><a href="support.html#privacy">Privacy</a><a href="support.html">Support</a></div><span>Prototype build · 2026</span></footer></main></div></div><script type="module" src="app.js"></script></body></html>
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>المتجر | Speedora</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .store-hero { background: linear-gradient(135deg, #43228e, #101831); border-radius: 18px; padding: 26px; text-align: center; margin-bottom: 16px; }
+  .store-hero h2 { margin: 0 0 6px; font-size: 22px; }
+  .store-hero p { margin: 0; color: #b5b7d3; font-size: 13px; }
+  .store-hero .balance-big { font-size: 32px; font-weight: 800; color: #c7a0ff; margin-top: 12px; }
+  .store-hero .egp-small { color: #87e5d6; font-size: 12px; }
+  .store-filters { display: flex; gap: 8px; margin: 16px 0; flex-wrap: wrap; }
+  .store-filters button { background: #0f1830; color: #aab8d7; border: 1px solid #2b385b; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 12px; font-family: inherit; }
+  .store-filters button.active { background: #43228e; color: white; border-color: #8b5cf6; }
+  .store-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .store-item { background: linear-gradient(145deg, #111a34, #0b1225); border: 1px solid #223052; border-radius: 14px; padding: 16px; text-align: center; position: relative; transition: .2s; }
+  .store-item:hover { border-color: #6845c1; transform: translateY(-3px); }
+  .store-item .item-icon { font-size: 42px; margin-bottom: 8px; }
+  .store-item .badge-new { position: absolute; top: 8px; left: 8px; font-size: 9px; padding: 3px 8px; border-radius: 20px; background: #ef4444; color: white; font-weight: bold; }
+  .store-item h3 { font-size: 14px; margin: 6px 0 4px; }
+  .store-item p { font-size: 11px; color: #8998ba; margin: 0 0 10px; min-height: 28px; }
+  .store-item .price { font-size: 15px; font-weight: 800; color: #c7a0ff; margin-bottom: 8px; }
+  .store-item .buy-btn { width: 100%; background: linear-gradient(100deg, #d43bea, #642cff); color: white; border: 0; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: bold; font-family: inherit; font-size: 12px; }
+  .store-item .buy-btn:disabled { background: #222; cursor: not-allowed; opacity: .5; }
+  .store-item .buy-btn.affordable { background: linear-gradient(100deg, #10b981, #059669); }
+  .purchases-section { margin-top: 24px; }
+  .purchases-section h2 { font-size: 16px; margin-bottom: 12px; }
+  .purchase-row { background: #0e172d; border: 1px solid #223052; border-radius: 12px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12px; }
+  .purchase-row b { color: #c7a0ff; }
+  .purchase-row small { color: #8998ba; font-size: 10px; display: block; margin-top: 2px; }
+  .empty-store { text-align: center; padding: 40px; color: #8998ba; font-size: 13px; }
+
+  /* Purchase modal */
+  .pmodal { position: fixed; inset: 0; background: rgba(0,0,0,.9); z-index: 9999; display: grid; place-items: center; padding: 20px; }
+  .pmodal[hidden] { display: none; }
+  .pmodal-content { background: linear-gradient(145deg, #1a1042, #101831); border: 1px solid #8b5cf6; border-radius: 20px; padding: 28px; max-width: 380px; width: 100%; text-align: center; }
+  .pmodal-content .big-icon { font-size: 60px; margin-bottom: 12px; }
+  .pmodal-content h3 { margin: 0 0 6px; font-size: 20px; }
+  .pmodal-content p { color: #b5b7d3; font-size: 13px; margin: 8px 0 16px; }
+  .pmodal-content .code { background: #0a1227; border: 1px dashed #8b5cf6; padding: 12px; border-radius: 10px; font-size: 15px; letter-spacing: 2px; font-weight: bold; color: #c7a0ff; margin: 12px 0; word-break: break-all; }
+  .pmodal-content button { background: linear-gradient(100deg, #d43bea, #642cff); color: white; border: 0; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-family: inherit; font-weight: bold; font-size: 14px; }
+</style>
+</head>
+<body data-page="rewards">
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="bolt">ϟ</span><span>Speedora<small>Play. Complete. Earn.</small></span></a>
+    <nav class="nav">
+      <a href="index.html">⌂ Home</a>
+      <a href="games.html">🎮 Games</a>
+      <a href="earn.html">▤ Earn</a>
+      <a class="active" href="rewards.html">🎁 Rewards</a>
+      <a href="wheel.html">🎡 Wheel</a>
+      <a href="achievements.html">🏅 Achievements</a>
+      <a href="leaderboard.html">🏆 Leaderboard</a>
+      <a href="wallet.html">▣ Wallet</a>
+      <a href="profile.html">♙ Profile</a>
+    </nav>
+    <div class="sidefoot">© 2026 Speedora</div>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <button class="menu" id="menu">☰</button>
+      <div class="crumb">Rewards Store</div>
+      <div class="actions"><a class="user" href="profile.html"><span class="avatar">A</span><span><b id="topName">Player</b><br><small id="topBalance">0 pts</small></span></a></div>
+    </header>
+    <main class="content">
+      <div class="pagehead">
+        <div><span class="eyebrow">REWARDS STORE</span><h1>المتجر</h1><p>استبدل نقاطك بمكافآت حقيقية</p></div>
+      </div>
+
+      <div class="store-hero">
+        <h2>رصيدك الحالي</h2>
+        <div class="balance-big" id="bigBalance">0</div>
+        <div class="egp-small" id="egpBalance">≈ 0 EGP</div>
+      </div>
+
+      <div class="store-filters" id="storeFilters">
+        <button class="active" data-filter="all">الكل</button>
+        <button data-filter="cheap">رخيص (أقل من 3000)</button>
+        <button data-filter="premium">مميز</button>
+        <button data-filter="available">متاح لي</button>
+      </div>
+
+      <div class="store-grid" id="storeGrid"></div>
+
+      <div class="purchases-section">
+        <h2>🛍️ مشترياتي</h2>
+        <div id="purchasesList"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Purchase Modal -->
+<div class="pmodal" id="pModal" hidden>
+  <div class="pmodal-content">
+    <div class="big-icon" id="pIcon">🎉</div>
+    <h3 id="pTitle">مبروك!</h3>
+    <p id="pDesc">تم الشراء بنجاح</p>
+    <div class="code" id="pCode" style="display:none"></div>
+    <button id="pClose">تم</button>
+  </div>
+</div>
+
+<script src="core.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => Number(n || 0).toLocaleString('en-US');
+let activeFilter = 'all';
+
+function render() {
+  const s = Speedora.get();
+  const conv = Speedora.getConversion();
+  $('topName').textContent = Speedora.getUserName();
+  $('topBalance').textContent = fmt(s.balance) + ' pts';
+  $('bigBalance').textContent = fmt(s.balance);
+  $('egpBalance').textContent = `≈ ${(s.balance / conv.rate).toFixed(2)} EGP`;
+
+  const store = Speedora.getStore();
+  let filtered = store;
+  if (activeFilter === 'cheap') filtered = store.filter(r => r.cost < 3000);
+  else if (activeFilter === 'premium') filtered = store.filter(r => r.cost >= 5000);
+  else if (activeFilter === 'available') filtered = store.filter(r => r.cost <= s.balance);
+
+  $('storeGrid').innerHTML = filtered.length === 0 
+    ? '<div class="empty-store">لا توجد منتجات في هذا القسم</div>'
+    : filtered.map(r => {
+      const canBuy = s.balance >= r.cost;
+      return `<div class="store-item">
+        ${r.badge ? `<span class="badge-new">${r.badge}</span>` : ''}
+        <div class="item-icon">${r.icon}</div>
+        <h3>${r.title}</h3>
+        <p>${r.desc}</p>
+        <div class="price">${fmt(r.cost)} نقطة</div>
+        <button class="buy-btn ${canBuy ? 'affordable' : ''}" data-id="${r.id}" ${canBuy ? '' : 'disabled'}>
+          ${canBuy ? '🛒 اشترِ الآن' : `محتاج ${fmt(r.cost - s.balance)} إضافية`}
+        </button>
+      </div>`;
+    }).join('');
+
+  // Purchases
+  const purchases = Speedora.getPurchases();
+  $('purchasesList').innerHTML = purchases.length === 0
+    ? '<div class="empty-store">لم تشترِ أي مكافأة بعد</div>'
+    : purchases.slice().reverse().slice(0, 10).map(p => `
+      <div class="purchase-row">
+        <div><b>${p.title || p.id}</b><small>${new Date(p.date).toLocaleString('ar-EG')}</small></div>
+        <div style="color:#10b981">✓</div>
+      </div>`).join('');
+
+  // Bind buy buttons
+  document.querySelectorAll('.buy-btn').forEach(b => {
+    b.onclick = (e) => {
+      const r = Speedora.purchase(b.dataset.id);
+      if (r.error) { Speedora.showToast(r.error, 'warning'); return; }
+      Speedora.playSound('success');
+      
+      if (r.reward.id === 'mystery_box') {
+        showPurchaseModal('🎁', 'صندوق الغموض!', `مبروك! كسبت <b style="color:#10b981;font-size:1.5em">${fmt(r.mysteryWon)} نقطة</b> من الصندوق!`, null);
+      } else {
+        const code = 'SPD-' + Math.random().toString(36).slice(2, 10).toUpperCase();
+        showPurchaseModal(r.reward.icon, `تم شراء ${r.reward.title}!`, r.reward.desc + '<br><br>كود الاستبدال:', code);
+      }
+      render();
+    };
+  });
+}
+
+function showPurchaseModal(icon, title, desc, code) {
+  $('pIcon').textContent = icon;
+  $('pTitle').textContent = title;
+  $('pDesc').innerHTML = desc;
+  if (code) {
+    $('pCode').textContent = code;
+    $('pCode').style.display = 'block';
+  } else {
+    $('pCode').style.display = 'none';
+  }
+  $('pModal').hidden = false;
+}
+
+$('pClose').onclick = () => $('pModal').hidden = true;
+
+document.querySelectorAll('#storeFilters button').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('#storeFilters button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    activeFilter = b.dataset.filter;
+    render();
+  };
+});
+
+window.addEventListener('pointsUpdated', render);
+$('menu')?.addEventListener('click', () => document.querySelector('.sidebar')?.classList.toggle('open'));
+render();
+</script>
+</body>
+</html>
