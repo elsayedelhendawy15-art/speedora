@@ -1,19 +1,60 @@
 /* ==========================================
-   Speedora — Unified Points Engine v1
-   محرك النقاط الموحد (يشتغل على كل الصفحات)
+   Speedora — Core Engine v2
+   (نقاط + يومية + level + عجلة + إنجازات + leaderboard)
    ========================================== */
 (function () {
   const KEY = 'speedora_state';
   const DEFAULTS = {
     balance: 1250, earned: 0, redeemed: 0, activity: [],
     streak: 0, lastClaim: null, level: 1,
-    totalGamesPlayed: 0, totalTasksDone: 0
+    totalGamesPlayed: 0, totalTasksDone: 0,
+    lastSpin: null,
+    unlockedAchievements: [],
+    bots: {}, lastBotUpdate: null
   };
 
   const POINTS_PER_EGP = 100;
   const MIN_REDEEM = 5000;
   const LEVELS = [0, 500, 1500, 3000, 5000, 8000, 12000, 18000, 25000, 35000, 50000];
-  const LEVEL_NAMES = ['مبتدئ', 'نشيط', 'محترف', 'خبير', 'متمكن', 'أسطورة', 'نجم', 'بطل', 'أسطوري', 'خارق', 'لا يُهزم'];
+  const LEVEL_NAMES = ['مبتدئ','نشيط','محترف','خبير','متمكن','أسطورة','نجم','بطل','أسطوري','خارق','لا يُهزم'];
+
+  const WHEEL_PRIZES = [
+    { label: '+50', points: 50, color: '#ef4444' },
+    { label: '+100', points: 100, color: '#f59e0b' },
+    { label: 'حظ أوفر', points: 0, color: '#6b7280' },
+    { label: '+200', points: 200, color: '#10b981' },
+    { label: '+500', points: 500, color: '#3b82f6' },
+    { label: '+50', points: 50, color: '#ef4444' },
+    { label: '+1000', points: 1000, color: '#8b5cf6' },
+    { label: '+100', points: 100, color: '#f59e0b' }
+  ];
+
+  const ACHIEVEMENTS = [
+    { id: 'first_game', icon: '🎮', title: 'أول خطوة', desc: 'العب أول لعبة', condition: s => s.totalGamesPlayed >= 1, reward: 50 },
+    { id: 'games_10', icon: '⚡', title: 'مدمن ألعاب', desc: 'العب 10 ألعاب', condition: s => s.totalGamesPlayed >= 10, reward: 200 },
+    { id: 'games_50', icon: '🔥', title: 'محترف', desc: 'العب 50 لعبة', condition: s => s.totalGamesPlayed >= 50, reward: 500 },
+    { id: 'first_task', icon: '✅', title: 'منفذ', desc: 'أكمل أول مهمة', condition: s => s.totalTasksDone >= 1, reward: 50 },
+    { id: 'tasks_10', icon: '📋', title: 'منظم', desc: 'أكمل 10 مهام', condition: s => s.totalTasksDone >= 10, reward: 300 },
+    { id: 'balance_1000', icon: '💰', title: 'مدخر', desc: 'وصل رصيدك 1000', condition: s => s.balance >= 1000, reward: 100 },
+    { id: 'balance_5000', icon: '💎', title: 'ثري', desc: 'وصل رصيدك 5000', condition: s => s.balance >= 5000, reward: 500 },
+    { id: 'balance_10000', icon: '👑', title: 'ملكي', desc: 'وصل رصيدك 10000', condition: s => s.balance >= 10000, reward: 1000 },
+    { id: 'streak_3', icon: '🔥', title: '3 أيام', desc: 'سلسلة 3 أيام', condition: s => s.streak >= 3, reward: 150 },
+    { id: 'streak_7', icon: '💥', title: 'أسبوع كامل', desc: 'سلسلة 7 أيام', condition: s => s.streak >= 7, reward: 500 },
+    { id: 'level_3', icon: '⭐', title: 'مستوى 3', desc: 'وصل للمستوى 3', condition: s => s.level >= 3, reward: 200 },
+    { id: 'level_5', icon: '🌟', title: 'مستوى 5', desc: 'وصل للمستوى 5', condition: s => s.level >= 5, reward: 500 }
+  ];
+
+  const BOTS = [
+    { name: 'ShadowKing', avatar: 'S', base: 24680 },
+    { name: 'LunaQueen', avatar: 'L', base: 19450 },
+    { name: 'CryptoGamer', avatar: 'C', base: 17632 },
+    { name: 'FastEagle', avatar: 'F', base: 15420 },
+    { name: 'PixelPro', avatar: 'P', base: 13278 },
+    { name: 'NeonHunter', avatar: 'N', base: 11890 },
+    { name: 'StarNinja', avatar: '★', base: 9456 },
+    { name: 'IceWolf', avatar: 'I', base: 8234 },
+    { name: 'FireDragon', avatar: 'D', base: 6789 }
+  ];
 
   const load = () => {
     try { return { ...DEFAULTS, ...(JSON.parse(localStorage.getItem(KEY)) || {}) }; }
@@ -24,13 +65,6 @@
     window.dispatchEvent(new CustomEvent('pointsUpdated', { detail: s }));
   };
   const calcLevel = (earned) => { let l = 1; LEVELS.forEach((v, i) => { if (earned >= v) l = i + 1; }); return l; };
-  const levelInfo = () => {
-    const s = load();
-    const lvl = calcLevel(s.earned);
-    const cur = LEVELS[lvl - 1] || 0;
-    const nxt = LEVELS[lvl] || (LEVELS[LEVELS.length - 1] + 15000);
-    return { level: lvl, name: LEVEL_NAMES[lvl - 1] || 'أسطوري', current: cur, next: nxt, progress: Math.min(100, ((s.earned - cur) / (nxt - cur)) * 100) };
-  };
   const streakBonus = (streak) => streak < 3 ? 50 : streak < 7 ? 100 : streak < 14 ? 200 : streak < 30 ? 350 : 500;
 
   window.Speedora = {
@@ -51,6 +85,7 @@
       if (s.level > oldLevel) {
         window.dispatchEvent(new CustomEvent('levelUp', { detail: { level: s.level, name: LEVEL_NAMES[s.level - 1] } }));
       }
+      this.checkAchievements();
       return s;
     },
 
@@ -72,31 +107,108 @@
 
     claimDaily() {
       const s = load();
-      if (!this.canClaimDaily()) return { error: 'استلمت مكافأة النهاردة بالفعل. ارجع بكرة!' };
-      let newStreak = 1;
+      if (!this.canClaimDaily()) return { error: 'استلمت النهاردة بالفعل. ارجع بكرة!' };
+      let ns = 1;
       if (s.lastClaim) {
-        const diff = Math.floor((new Date() - new Date(s.lastClaim)) / 86400000);
-        newStreak = diff === 1 ? s.streak + 1 : 1;
+        const d = Math.floor((new Date() - new Date(s.lastClaim)) / 86400000);
+        ns = d === 1 ? s.streak + 1 : 1;
       }
-      s.streak = newStreak;
+      s.streak = ns;
       s.lastClaim = new Date().toISOString();
       save(s);
-      const bonus = streakBonus(newStreak);
-      this.addPoints(bonus, `مكافأة يومية (${newStreak} يوم متتالي)`, 'bonus');
-      return { ok: true, bonus, streak: newStreak };
+      const bonus = streakBonus(ns);
+      this.addPoints(bonus, `مكافأة يومية (${ns} يوم)`, 'bonus');
+      return { ok: true, bonus, streak: ns };
     },
 
-    getLevelInfo: levelInfo,
+    /* ===== Wheel ===== */
+    getWheelPrizes: () => WHEEL_PRIZES,
+    canSpin() {
+      const s = load();
+      if (!s.lastSpin) return true;
+      return new Date(s.lastSpin).toDateString() !== new Date().toDateString();
+    },
+    spin() {
+      if (!this.canSpin()) return { error: 'لعبت النهاردة. ارجع بكرة!' };
+      const idx = Math.floor(Math.random() * WHEEL_PRIZES.length);
+      const prize = WHEEL_PRIZES[idx];
+      const s = load();
+      s.lastSpin = new Date().toISOString();
+      save(s);
+      if (prize.points > 0) this.addPoints(prize.points, 'عجلة الحظ', 'wheel');
+      return { ok: true, index: idx, prize };
+    },
+
+    /* ===== Achievements ===== */
+    checkAchievements() {
+      for (let i = 0; i < 5; i++) {
+        const s = load();
+        const newOnes = ACHIEVEMENTS.filter(a => !s.unlockedAchievements.includes(a.id) && a.condition(s));
+        if (!newOnes.length) break;
+        newOnes.forEach(a => {
+          s.unlockedAchievements.push(a.id);
+          s.balance += a.reward;
+          s.earned += a.reward;
+          s.activity.unshift({ type: 'achievement', title: `إنجاز: ${a.title}`, points: a.reward, date: new Date().toISOString() });
+          window.dispatchEvent(new CustomEvent('achievementUnlocked', { detail: a }));
+        });
+        s.level = calcLevel(s.earned);
+        save(s);
+      }
+    },
+    getAchievements() {
+      const s = load();
+      return ACHIEVEMENTS.map(a => ({ ...a, unlocked: s.unlockedAchievements.includes(a.id) }));
+    },
+
+    /* ===== Leaderboard ===== */
+    getLeaderboard(userName = 'أنت') {
+      const s = load();
+      const today = new Date().toDateString();
+      if (s.lastBotUpdate !== today) {
+        BOTS.forEach(b => {
+          if (!s.bots[b.name]) s.bots[b.name] = b.base;
+          s.bots[b.name] += 50 + Math.floor(Math.random() * 450);
+        });
+        s.lastBotUpdate = today;
+        save(s);
+      }
+      const all = BOTS.map(b => ({ name: b.name, avatar: b.avatar, points: s.bots[b.name] || b.base, isUser: false }));
+      all.push({ name: userName, avatar: 'A', points: s.balance, isUser: true });
+      all.sort((a, b) => b.points - a.points);
+      return all;
+    },
+
+    /* ===== Helpers ===== */
+    getLevelInfo() {
+      const s = load();
+      const lvl = calcLevel(s.earned);
+      const cur = LEVELS[lvl - 1] || 0;
+      const nxt = LEVELS[lvl] || (LEVELS[LEVELS.length - 1] + 15000);
+      return {
+        level: lvl, name: LEVEL_NAMES[lvl - 1] || 'أسطوري',
+        current: cur, next: nxt,
+        progress: Math.min(100, ((s.earned - cur) / (nxt - cur)) * 100)
+      };
+    },
     getConversion: () => ({ rate: POINTS_PER_EGP, minRedeem: MIN_REDEEM }),
-    streakBonus,
+    streakBonus
   };
 
-  // شاشة احتفال عند Level Up
-  window.addEventListener('levelUp', (e) => {
-    const toast = document.createElement('div');
-    toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#d43bea,#642cff);color:white;padding:16px 28px;border-radius:14px;z-index:9999;font-weight:bold;box-shadow:0 10px 40px rgba(100,44,255,.5);animation:pop .4s';
-    toast.textContent = `🎉 وصلت للمستوى ${e.detail.level} - ${e.detail.name}!`;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 4000);
+  window.addEventListener('levelUp', e => {
+    const t = document.createElement('div');
+    t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#d43bea,#642cff);color:white;padding:16px 28px;border-radius:14px;z-index:9999;font-weight:bold;box-shadow:0 10px 40px rgba(100,44,255,.5)';
+    t.textContent = `🎉 وصلت للمستوى ${e.detail.level} - ${e.detail.name}!`;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 4000);
+  });
+
+  window.addEventListener('achievementUnlocked', e => {
+    const a = e.detail;
+    const t = document.createElement('div');
+    t.style.cssText = 'position:fixed;top:80px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#f59e0b,#ef4444);color:white;padding:14px 24px;border-radius:14px;z-index:9999;font-weight:bold;box-shadow:0 10px 40px rgba(239,68,68,.5)';
+    t.textContent = `${a.icon} إنجاز: ${a.title} (+${a.reward})`;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 4000);
   });
 })();
