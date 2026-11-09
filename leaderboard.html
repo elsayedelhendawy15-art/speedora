@@ -1,1 +1,110 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080b19"><meta name="description" content="See the Speedora sample leaderboard."><title>Leaderboard | Speedora</title><link rel="stylesheet" href="styles.css"></head><body data-page="leaderboard"><div class="shell"><aside class="sidebar"><a class="brand" href="index.html"><span class="bolt">ϟ</span><span>Speedora<small>Play. Complete. Earn.</small></span></a><nav class="nav"><a class="" href="index.html">⌂ &nbsp; Home</a><a class="" href="games.html">🎮 &nbsp; Games</a><a class="" href="earn.html">▤ &nbsp; Earn</a><a class="" href="rewards.html">🎁 &nbsp; Rewards</a><a class="active" href="leaderboard.html">🏆 &nbsp; Leaderboard</a><a class="" href="wallet.html">▣ &nbsp; Wallet</a><a class="" href="profile.html">♙ &nbsp; Profile</a><a class="" href="support.html">ⓘ &nbsp; Support</a></nav><div class="vip"><div style="font-size:25px">♛</div><b>VIP Club</b><p>Special events and member perks can be added as the platform grows.</p><a class="btn" href="rewards.html">Explore rewards</a></div><div class="sidefoot">© 2026 Speedora</div></aside><div class="main"><header class="top"><button class="menu" id="menu">☰</button><div class="crumb">Dashboard / Leaderboard</div><div class="actions"><label class="search">⌕ <input id="search" placeholder="Search this page..."></label><a class="user" href="profile.html"><span class="avatar">A</span><span><b>AlexMaster</b><br><small>Demo profile · Level 1</small></span></a></div></header><main class="content"><div class="pagehead"><div><span class="eyebrow">COMMUNITY</span><h1>Leaderboard</h1><p>Sample ranking with fictional demo profiles.</p></div><span class="badge">Weekly demo</span></div><section class="hero" style="min-height:150px;grid-template-columns:1fr auto"><div class="hero-copy"><span class="eyebrow">COMPETE & IMPROVE</span><h2>Small steps. Big streaks.</h2><p>These sample scores are fictional and not connected to real accounts.</p></div><div style="font-size:65px;padding:20px">🏆</div></section><section class="panel" style="margin-top:15px"><div class="heading compact"><div><h2>Global leaderboard</h2><span class="muted">Illustrative scores · not real users</span></div></div><table class="table"><thead><tr><th>Rank</th><th>Player</th><th>Level</th><th>Demo points</th></tr></thead><tbody><tr><td>01</td><td><span class="player"><span class="avatar">S</span><b>ShadowKing</b></span></td><td>18</td><td><b>24,680</b></td></tr><tr><td>02</td><td><span class="player"><span class="avatar">L</span><b>LunaQueen</b></span></td><td>16</td><td><b>19,450</b></td></tr><tr><td>03</td><td><span class="player"><span class="avatar">C</span><b>CryptoGamer</b></span></td><td>14</td><td><b>17,632</b></td></tr><tr><td>04</td><td><span class="player"><span class="avatar">F</span><b>FastEagle</b></span></td><td>12</td><td><b>15,420</b></td></tr><tr><td>05</td><td><span class="player"><span class="avatar">P</span><b>PixelPro</b></span></td><td>11</td><td><b>13,278</b></td></tr><tr><td>—</td><td><span class="player"><span class="avatar">A</span><b>AlexMaster (you)</b></span></td><td>1</td><td id="leaderPoints">1,250</td></tr></tbody></table></section><div class="banner"><b>Fair-play note</b><p>A real leaderboard needs verified server-side activity and anti-cheat checks; browser-only scores are not trustworthy.</p></div><footer class="footer"><a class="brand" href="index.html"><span class="bolt" style="font-size:30px">ϟ</span><span style="font-size:15px">Speedora<small>Play. Complete. Earn.</small></span></a><div><a href="support.html">About</a><a href="support.html#terms">Terms</a><a href="support.html#privacy">Privacy</a><a href="support.html">Support</a></div><span>Prototype build · 2026</span></footer></main></div></div><script type="module" src="app.js"></script></body></html>
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>المتصدرين | Speedora</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .lb-hero { background: radial-gradient(ellipse at 50% 30%, #5a29ad77, transparent 60%), #111832; border: 1px solid #3b2c76; border-radius: 18px; padding: 30px; text-align: center; margin-bottom: 16px; }
+  .lb-hero .trophy { font-size: 60px; }
+  .lb-hero h2 { margin: 10px 0 6px; font-size: 22px; }
+  .lb-hero p { margin: 0; color: #b5b7d3; font-size: 13px; }
+  .lb-list { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+  .lb-row {
+    background: #0e172d; border: 1px solid #223052;
+    border-radius: 12px; padding: 14px;
+    display: flex; align-items: center; gap: 14px;
+    transition: .2s;
+  }
+  .lb-row:hover { border-color: #6845c1; }
+  .lb-row.user { background: linear-gradient(90deg, #43228e, #2a1458); border-color: #8b5cf6; box-shadow: 0 0 20px rgba(139,92,246,.3); }
+  .lb-rank { font-size: 20px; font-weight: 800; width: 40px; text-align: center; color: #8998ba; }
+  .lb-row:nth-child(1) .lb-rank { color: #ffd700; }
+  .lb-row:nth-child(2) .lb-rank { color: #c0c0c0; }
+  .lb-row:nth-child(3) .lb-rank { color: #cd7f32; }
+  .lb-avatar { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #753cff, #d43bea); font-weight: 800; color: white; font-size: 16px; }
+  .lb-row:nth-child(1) .lb-avatar { background: linear-gradient(135deg, #fbbf24, #d97706); }
+  .lb-row:nth-child(2) .lb-avatar { background: linear-gradient(135deg, #e5e7eb, #6b7280); }
+  .lb-row:nth-child(3) .lb-avatar { background: linear-gradient(135deg, #cd7f32, #92400e); }
+  .lb-name { flex: 1; font-weight: 600; font-size: 14px; }
+  .lb-name small { display: block; font-size: 10px; color: #8998ba; font-weight: 400; }
+  .lb-pts { font-size: 16px; font-weight: 800; color: #87e5d6; }
+  .lb-row.user .lb-pts { color: #ffca62; }
+</style>
+</head>
+<body data-page="leaderboard">
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="bolt">ϟ</span><span>Speedora<small>Play. Complete. Earn.</small></span></a>
+    <nav class="nav">
+      <a href="index.html">⌂ Home</a>
+      <a href="games.html">🎮 Games</a>
+      <a href="earn.html">▤ Earn</a>
+      <a href="rewards.html">🎁 Rewards</a>
+      <a href="wheel.html">🎡 Wheel</a>
+      <a href="achievements.html">🏅 Achievements</a>
+      <a class="active" href="leaderboard.html">🏆 Leaderboard</a>
+      <a href="wallet.html">▣ Wallet</a>
+      <a href="profile.html">♙ Profile</a>
+    </nav>
+    <div class="sidefoot">© 2026 Speedora</div>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <button class="menu" id="menu">☰</button>
+      <div class="crumb">Leaderboard</div>
+      <div class="actions"><a class="user" href="profile.html"><span class="avatar">A</span><span><b id="userName">Player</b><br><small id="userBalance">0 pts</small></span></a></div>
+    </header>
+    <main class="content">
+      <div class="pagehead">
+        <div><span class="eyebrow">GLOBAL RANKING</span><h1>المتصدرين</h1><p>أفضل اللاعبين هذا الأسبوع</p></div>
+      </div>
+
+      <div class="lb-hero">
+        <div class="trophy">🏆</div>
+        <h2>التصنيف العالمي</h2>
+        <p>احتل مكانك بين أفضل اللاعبين</p>
+      </div>
+
+      <div class="lb-list" id="lbList"></div>
+
+      <div class="banner" style="margin-top:16px">
+        <b>ℹ️ ملاحظة</b>
+        <p>النتائج تتحدث تلقائياً. اسمك يظهر باللون البنفسجي في القائمة.</p>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="core.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => Number(n || 0).toLocaleString('en-US');
+
+function render() {
+  const s = Speedora.get();
+  $('userBalance').textContent = fmt(s.balance) + ' pts';
+  $('userName').textContent = 'Player';
+
+  const list = Speedora.getLeaderboard('أنت');
+  const grid = $('lbList');
+  grid.innerHTML = list.map((u, i) => `
+    <div class="lb-row ${u.isUser ? 'user' : ''}">
+      <div class="lb-rank">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1)}</div>
+      <div class="lb-avatar">${u.avatar}</div>
+      <div class="lb-name">
+        ${u.name}${u.isUser ? ' (أنت)' : ''}
+        <small>${u.isUser ? 'مستواك' : 'لاعب'}</small>
+      </div>
+      <div class="lb-pts">${fmt(u.points)}</div>
+    </div>
+  `).join('');
+}
+
+window.addEventListener('pointsUpdated', render);
+$('menu')?.addEventListener('click', () => document.querySelector('.sidebar')?.classList.toggle('open'));
+render();
+</script>
+</body>
+</html>
