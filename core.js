@@ -210,5 +210,84 @@
     t.textContent = `${a.icon} إنجاز: ${a.title} (+${a.reward})`;
     document.body.appendChild(t);
     setTimeout(() => t.remove(), 4000);
+       /* ===== v3 Extensions ===== */
+  const SOUND_KEY = 'speedora_sound';
+
+  window.Speedora.getUserName = function() {
+    return localStorage.getItem('speedora_user_name') || 'Player';
+  };
+  window.Speedora.setUserName = function(name) {
+    localStorage.setItem('speedora_user_name', name);
+    window.dispatchEvent(new CustomEvent('userNameChanged', { detail: name }));
+  };
+
+  window.Speedora.getReferralCode = function() {
+    let code = localStorage.getItem('speedora_ref_code');
+    if (!code) {
+      code = 'SPD' + Math.random().toString(36).slice(2, 8).toUpperCase();
+      localStorage.setItem('speedora_ref_code', code);
+    }
+    return code;
+  };
+
+  window.Speedora.gamesPlayedToday = function() {
+    const s = load();
+    const today = new Date().toDateString();
+    return (s.activity || []).filter(a => a.type === 'game' && new Date(a.date).toDateString() === today).length;
+  };
+  window.Speedora.spunToday = function() {
+    const s = load();
+    return s.lastSpin && new Date(s.lastSpin).toDateString() === new Date().toDateString();
+  };
+  window.Speedora.claimedDailyToday = function() {
+    const s = load();
+    return s.lastClaim && new Date(s.lastClaim).toDateString() === new Date().toDateString();
+  };
+  window.Speedora.taskClaimedToday = function(taskId) {
+    const s = load();
+    const today = new Date().toDateString();
+    return (s.activity || []).some(a => a.type === 'task' && a.title === taskId && new Date(a.date).toDateString() === today);
+  };
+
+  /* ===== Sound Engine ===== */
+  let audioCtx = null;
+  window.Speedora.isSoundOn = function() {
+    return localStorage.getItem(SOUND_KEY) !== 'off';
+  };
+  window.Speedora.toggleSound = function() {
+    const on = !this.isSoundOn();
+    localStorage.setItem(SOUND_KEY, on ? 'on' : 'off');
+    return on;
+  };
+  window.Speedora.playSound = function(type) {
+    if (!this.isSoundOn()) return;
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = audioCtx;
+      const now = ctx.currentTime;
+
+      const notes = {
+        point: [523.25, 659.25, 783.99],  // C-E-G
+        success: [523.25, 659.25, 783.99, 1046.5],
+        fail: [329.63, 261.63],
+        spin: [261.63, 329.63, 392.00, 523.25],
+        achievement: [659.25, 783.99, 987.77, 1318.51],
+      };
+      const seq = notes[type] || notes.point;
+      seq.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, now + i * 0.08);
+        gain.gain.linearRampToValueAtTime(0.15, now + i * 0.08 + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.25);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + i * 0.08);
+        osc.stop(now + i * 0.08 + 0.3);
+      });
+    } catch (e) { /* silent fail */ }
+  };
   });
 })();
