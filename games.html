@@ -1,2 +1,487 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080b19"><meta name="description" content="Explore Speedora mini-games and interactive demos."><title>Games | Speedora</title><link rel="stylesheet" href="styles.css"></head><body data-page="games"><div class="shell"><aside class="sidebar"><a class="brand" href="index.html"><span class="bolt">ϟ</span><span>Speedora<small>Play. Complete. Earn.</small></span></a><nav class="nav"><a class="" href="index.html">⌂ &nbsp; Home</a><a class="active" href="games.html">🎮 &nbsp; Games</a><a class="" href="earn.html">▤ &nbsp; Earn</a><a class="" href="rewards.html">🎁 &nbsp; Rewards</a><a class="" href="leaderboard.html">🏆 &nbsp; Leaderboard</a><a class="" href="wallet.html">▣ &nbsp; Wallet</a><a class="" href="profile.html">♙ &nbsp; Profile</a><a class="" href="support.html">ⓘ &nbsp; Support</a></nav><div class="vip"><div style="font-size:25px">♛</div><b>VIP Club</b><p>Special events and member perks can be added as the platform grows.</p><a class="btn" href="rewards.html">Explore rewards</a></div><div class="sidefoot">© 2026 Speedora</div></aside><div class="main"><header class="top"><button class="menu" id="menu">☰</button><div class="crumb">Dashboard / Games</div><div class="actions"><label class="search">⌕ <input id="search" placeholder="Search this page..."></label><a class="user" href="profile.html"><span class="avatar">A</span><span><b>AlexMaster</b><br><small>Demo profile · Level 1</small></span></a></div></header><main class="content"><div class="pagehead"><div><span class="eyebrow">PLAY & EXPLORE</span><h1>Games</h1><p>Quick mini-game concepts and interactive demos.</p></div><span class="badge">Demo points only</span></div><div class="notice">ⓘ <div><b>Prototype preview</b><p>Games below are simple demos. Points have no monetary value and are not redeemable.</p></div></div><div class="filters"><button class="filter active" data-filter="all">All games</button><button class="filter" data-filter="puzzle">Puzzle</button><button class="filter" data-filter="trivia">Trivia</button><button class="filter" data-filter="reflex">Reflex</button></div><div class="catalog">
-<article class="card" data-category="trivia" id="quiz"><div class="cardcover">🧠</div><div class="cardbody"><div class="between"><h3>Quiz Master</h3><span class="points">DEMO</span></div><p>Answer a quick question and test your knowledge.</p><div class="between"><span class="muted">◷ 1–4 min</span><span class="points">+20 pts</span></div><button class="btn play" data-game="quiz" data-points="20">Play demo</button></div></article><article class="card" data-category="puzzle" id="memory"><div class="cardcover">🃏</div><div class="cardbody"><div class="between"><h3>Memory Match</h3><span class="points">DEMO</span></div><p>Pick the matching pair in a mini challenge.</p><div class="between"><span class="muted">◷ 1–4 min</span><span class="points">+15 pts</span></div><button class="btn play" data-game="memory" data-points="15">Play demo</button></div></article><article class="card" data-category="puzzle" id="merge"><div class="cardcover">2048</div><div class="cardbody"><div class="between"><h3>Number Merge</h3><span class="points">DEMO</span></div><p>A quick number logic question inspired by merge games.</p><div class="between"><span class="muted">◷ 1–4 min</span><span class="points">+15 pts</span></div><button class="btn play" data-game="merge" data-points="15">Play demo</button></div></article><article class="card" data-category="reflex" id="speed"><div class="cardcover">⚡</div><div class="cardbody"><div class="between"><h3>Speed Tap</h3><span class="points">DEMO</span></div><p>Choose the right symbol in a reflex-style demo.</p><div class="between"><span class="muted">◷ 1–4 min</span><span class="points">+5 pts</span></div><button class="btn play" data-game="speed" data-points="5">Play demo</button></div></article><article class="card" data-category="trivia" id="world"><div class="cardcover">🌍</div><div class="cardbody"><div class="between"><h3>World Facts</h3><span class="points">DEMO</span></div><p>Explore a sample global trivia question.</p><div class="between"><span class="muted">◷ 1–4 min</span><span class="points">+10 pts</span></div><button class="btn play" data-game="world" data-points="10">Play demo</button></div></article><article class="card" data-category="puzzle" id="logic"><div class="cardcover">🧩</div><div class="cardbody"><div class="between"><h3>Pattern Logic</h3><span class="points">DEMO</span></div><p>Try a tiny logic challenge.</p><div class="between"><span class="muted">◷ 1–4 min</span><span class="points">+10 pts</span></div><button class="btn play" data-game="logic" data-points="10">Play demo</button></div></article></div><section class="panel" id="gamebox" hidden style="margin-top:15px"><div class="between"><div><span class="eyebrow">QUICK PLAY</span><h2 id="gameTitle">Mini game</h2></div><button class="btn secondary" id="closeGame">Close</button></div><p id="question">Choose the correct answer.</p><div id="answers" class="filters"></div><p class="muted" id="gameMessage">Demo points only.</p></section><footer class="footer"><a class="brand" href="index.html"><span class="bolt" style="font-size:30px">ϟ</span><span style="font-size:15px">Speedora<small>Play. Complete. Earn.</small></span></a><div><a href="support.html">About</a><a href="support.html#terms">Terms</a><a href="support.html#privacy">Privacy</a><a href="support.html">Support</a></div><span>Prototype build · 2026</span></footer></main></div></div><script type="module" src="app.js"></script></body></html>
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080b19">
+<title>Games | Speedora</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ===== Game Modal & Game Styles (Self-Contained) ===== */
+  .game-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 999; display: grid; place-items: center; padding: 16px; }
+  .game-modal[hidden] { display: none; }
+  .game-modal-content { background: #101831; border: 1px solid #3c2b78; border-radius: 20px; padding: 22px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
+  .game-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .game-modal-header h2 { font-size: 18px; margin: 0; }
+  .game-close { background: #1e293b; border: 0; color: white; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 16px; }
+
+  /* Memory Match */
+  .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 16px 0; }
+  .memory-card { aspect-ratio: 1; background: linear-gradient(135deg,#6d28d9,#4c1d95); border-radius: 10px; cursor: pointer; display: grid; place-items: center; font-size: 26px; transition: 0.2s; user-select: none; }
+  .memory-card.flipped { background: #1e293b; }
+  .memory-card.matched { background: #065f46; cursor: default; }
+
+  /* Speed Tap */
+  .tap-header { display: flex; justify-content: space-between; padding: 10px 0; font-size: 14px; }
+  .tap-area { position: relative; height: 260px; background: #0a1227; border-radius: 12px; margin: 10px 0; overflow: hidden; }
+  .tap-target { position: absolute; width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle,#f472b6,#be185d); cursor: pointer; animation: pulse 0.6s infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+
+  /* Number Guess */
+  .ng-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #333; background: #0a1227; color: white; font-size: 16px; margin-bottom: 10px; }
+
+  /* General */
+  .g-btn { width: 100%; padding: 12px; margin: 5px 0; background: #1e293b; border: 1px solid #333; color: white; border-radius: 10px; cursor: pointer; font-size: 14px; text-align: center; }
+  .g-btn:hover { background: #2a3a5a; border-color: #753cff; }
+  .g-btn-primary { background: linear-gradient(100deg,#d43bea,#642cff); border: 0; }
+  .g-result { text-align: center; padding: 20px; }
+  .g-result h3 { color: #10b981; margin: 10px 0; }
+  .g-stat { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; }
+  .g-hint { text-align: center; min-height: 24px; color: #aebdeb; margin-top: 8px; }
+
+  /* Games grid card */
+  .game-card { position: relative; overflow: hidden; cursor: pointer; transition: 0.2s; }
+  .game-card:hover { transform: translateY(-3px); border-color: #753cff; }
+  .game-card .cover { height: 100px; display: grid; place-items: center; font-size: 46px; background: radial-gradient(circle,#6d28d9,#14152f); }
+  .game-card .cardbody { padding: 12px; }
+  .game-card h3 { font-size: 14px; margin: 0 0 4px; }
+  .game-card p { font-size: 11px; color: #9eaccb; margin: 0 0 8px; min-height: 30px; }
+  .game-card .pts-badge { font-size: 11px; color: #87e5d6; font-weight: 700; }
+</style>
+</head>
+<body data-page="games">
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="bolt">ϟ</span><span>Speedora<small>Play. Complete. Earn.</small></span></a>
+    <nav class="nav">
+      <a href="index.html">⌂ &nbsp; Home</a>
+      <a class="active" href="games.html">🎮 &nbsp; Games</a>
+      <a href="earn.html">▤ &nbsp; Earn</a>
+      <a href="rewards.html">🎁 &nbsp; Rewards</a>
+      <a href="leaderboard.html">🏆 &nbsp; Leaderboard</a>
+      <a href="wallet.html">▣ &nbsp; Wallet</a>
+      <a href="profile.html">♙ &nbsp; Profile</a>
+      <a href="support.html">ⓘ &nbsp; Support</a>
+    </nav>
+    <div class="sidefoot">© 2026 Speedora</div>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <button class="menu" id="menu">☰</button>
+      <div class="crumb">Dashboard / Games</div>
+      <div class="actions">
+        <label class="search">⌕ <input id="search" placeholder="Search..."></label>
+        <a class="user" href="profile.html"><span class="avatar">A</span><span><b id="userName">Player</b><br><small id="userBalance">0 pts</small></span></a>
+      </div>
+    </header>
+    <main class="content">
+      <div class="pagehead">
+        <div><span class="eyebrow">PLAY & WIN</span><h1>Games</h1><p>6 ألعاب حقيقية - العب واكسب نقاط فوراً</p></div>
+        <span class="badge">Balance: <b id="balanceBadge">0</b> pts</span>
+      </div>
+
+      <div class="catalog" id="gamesGrid">
+        <article class="card game-card" data-game="memory">
+          <div class="cover">🃏</div>
+          <div class="cardbody">
+            <h3>Memory Match</h3>
+            <p>اعثر على الأزواج المتطابقة قبل نهاية الوقت</p>
+            <span class="pts-badge">+150 نقطة</span>
+          </div>
+        </article>
+
+        <article class="card game-card" data-game="tap">
+          <div class="cover">⚡</div>
+          <div class="cardbody">
+            <h3>Speed Tap</h3>
+            <p>اضغط على الدائرة بسرعة خلال 20 ثانية</p>
+            <span class="pts-badge">+5 لكل ضغطة</span>
+          </div>
+        </article>
+
+        <article class="card game-card" data-game="number">
+          <div class="cover">🎯</div>
+          <div class="cardbody">
+            <h3>Number Guess</h3>
+            <p>خمّن الرقم من 1 إلى 100 في 10 محاولات</p>
+            <span class="pts-badge">حتى +200 نقطة</span>
+          </div>
+        </article>
+
+        <article class="card game-card" data-game="math">
+          <div class="cover">🧮</div>
+          <div class="cardbody">
+            <h3>Math Sprint</h3>
+            <p>حل أكبر عدد من المسائل في 30 ثانية</p>
+            <span class="pts-badge">+5 لكل إجابة</span>
+          </div>
+        </article>
+
+        <article class="card game-card" data-game="reaction">
+          <div class="cover">⚡</div>
+          <div class="cardbody">
+            <h3>Reaction Test</h3>
+            <p>اضغط بمجرد أن يتحول اللون إلى الأخضر</p>
+            <span class="pts-badge">حتى +200 نقطة</span>
+          </div>
+        </article>
+
+        <article class="card game-card" data-game="quiz">
+          <div class="cover">🧠</div>
+          <div class="cardbody">
+            <h3>General Quiz</h3>
+            <p>5 أسئلة عامة - اختبر معلوماتك</p>
+            <span class="pts-badge">+40 لكل إجابة صح</span>
+          </div>
+        </article>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Game Modal -->
+<div class="game-modal" id="gameModal" hidden>
+  <div class="game-modal-content">
+    <div class="game-modal-header">
+      <h2 id="gameTitle">Game</h2>
+      <button class="game-close" id="gameClose">✕</button>
+    </div>
+    <div id="gameArea"></div>
+  </div>
+</div>
+
+<script>
+/* ===== نظام النقاط (متوافق مع app.js) ===== */
+const STATE_KEY = 'speedora_state';
+const getState = () => JSON.parse(localStorage.getItem(STATE_KEY)) || { balance: 1250, earned: 0, redeemed: 0, activity: [] };
+const saveState = (s) => localStorage.setItem(STATE_KEY, JSON.stringify(s));
+const fmtNum = n => Number(n || 0).toLocaleString('en-US');
+
+function addPoints(title, points) {
+  const s = getState();
+  s.balance = (s.balance || 0) + points;
+  s.earned = (s.earned || 0) + points;
+  s.activity = s.activity || [];
+  s.activity.unshift({ title, points, date: new Date().toLocaleDateString('ar-EG') });
+  if (s.activity.length > 50) s.activity = s.activity.slice(0, 50);
+  saveState(s);
+  updateDisplays();
+  toast(`+${points} نقطة!`);
+}
+
+function updateDisplays() {
+  const s = getState();
+  document.getElementById('balanceBadge').textContent = fmtNum(s.balance);
+  document.getElementById('userBalance').textContent = fmtNum(s.balance) + ' pts';
+}
+
+function toast(msg) {
+  let x = document.querySelector('.toast');
+  if (x) x.remove();
+  x = document.createElement('div');
+  x.className = 'toast';
+  x.textContent = msg;
+  document.body.append(x);
+  setTimeout(() => x.remove(), 2500);
+}
+
+/* ===== إدارة المودال ===== */
+const modal = document.getElementById('gameModal');
+const gameTitle = document.getElementById('gameTitle');
+const gameArea = document.getElementById('gameArea');
+let cleanup = null;
+
+function openGame(title, initFn) {
+  gameTitle.textContent = title;
+  gameArea.innerHTML = '';
+  modal.hidden = false;
+  if (cleanup) { cleanup(); cleanup = null; }
+  cleanup = initFn(gameArea) || null;
+}
+
+function closeGame() {
+  if (cleanup) { cleanup(); cleanup = null; }
+  gameArea.innerHTML = '';
+  modal.hidden = true;
+}
+
+document.getElementById('gameClose').onclick = closeGame;
+
+/* ===== اللعبة 1: Memory Match ===== */
+function initMemory(c) {
+  const emojis = ['🎮','🎁','⚡','🏆','💎','🔥','⭐','🚀'];
+  const cards = [...emojis, ...emojis].map((e,i)=>({id:i,emoji:e,flipped:false,matched:false})).sort(()=>Math.random()-0.5);
+
+  c.innerHTML = '<div class="memory-grid" id="memGrid"></div><p class="g-hint" id="memStatus">اعثر على كل الأزواج!</p>';
+  const grid = c.querySelector('#memGrid');
+  const status = c.querySelector('#memStatus');
+  let first=null, second=null, lock=false, matches=0;
+
+  cards.forEach(card => {
+    const el = document.createElement('div');
+    el.className = 'memory-card';
+    el.onclick = () => {
+      if (lock || card.flipped || card.matched) return;
+      card.flipped = true;
+      el.classList.add('flipped');
+      el.textContent = card.emoji;
+      if (!first) { first = {card, el}; return; }
+      second = {card, el};
+      lock = true;
+      setTimeout(() => {
+        if (first.card.emoji === second.card.emoji) {
+          first.card.matched = second.card.matched = true;
+          first.el.classList.add('matched');
+          second.el.classList.add('matched');
+          matches++;
+          status.textContent = `أحسنت! ${matches} / 8`;
+          if (matches === 8) {
+            status.textContent = '🎉 مبروك! كسبت 150 نقطة';
+            addPoints('Memory Match', 150);
+          }
+        } else {
+          first.card.flipped = second.card.flipped = false;
+          first.el.classList.remove('flipped');
+          second.el.classList.remove('flipped');
+          first.el.textContent = '';
+          second.el.textContent = '';
+        }
+        first = second = null;
+        lock = false;
+      }, 700);
+    };
+    grid.appendChild(el);
+  });
+}
+
+/* ===== اللعبة 2: Speed Tap ===== */
+function initTap(c) {
+  c.innerHTML = `
+    <div class="tap-header"><div>⏱ الوقت: <b id="tapTime">20</b></div><div>✅ النتيجة: <b id="tapScore">0</b></div></div>
+    <div class="tap-area" id="tapArea"></div>
+    <div class="g-hint" id="tapMsg">اضغط على الدوائر الوردية!</div>`;
+  const area = c.querySelector('#tapArea');
+  const timeEl = c.querySelector('#tapTime');
+  const scoreEl = c.querySelector('#tapScore');
+  const msg = c.querySelector('#tapMsg');
+  let score = 0, time = 20, ended = false;
+
+  function spawn() {
+    if (ended) return;
+    area.innerHTML = '';
+    const t = document.createElement('div');
+    t.className = 'tap-target';
+    t.style.left = Math.random() * (area.clientWidth - 70) + 'px';
+    t.style.top = Math.random() * (area.clientHeight - 70) + 'px';
+    t.onclick = (e) => { e.stopPropagation(); score++; scoreEl.textContent = score; spawn(); };
+    area.appendChild(t);
+  }
+
+  const timer = setInterval(() => {
+    time--; timeEl.textContent = time;
+    if (time <= 0) {
+      ended = true;
+      clearInterval(timer);
+      const pts = score * 5;
+      msg.innerHTML = `<b>خلص الوقت! نقاطك: ${score} → +${pts} نقطة</b>`;
+      area.innerHTML = '';
+      if (pts > 0) addPoints('Speed Tap', pts);
+    }
+  }, 1000);
+
+  spawn();
+  return () => { ended = true; clearInterval(timer); };
+}
+
+/* ===== اللعبة 3: Number Guess ===== */
+function initNumber(c) {
+  const target = Math.floor(Math.random() * 100) + 1;
+  let tries = 0;
+  c.innerHTML = `
+    <p style="text-align:center;margin:0 0 10px">خمّن الرقم بين 1 و 100 (10 محاولات)</p>
+    <input type="number" class="ng-input" id="ngInput" min="1" max="100" placeholder="اكتب رقم...">
+    <button class="g-btn g-btn-primary" id="ngBtn">خمّن</button>
+    <p class="g-hint" id="ngHint"></p>
+    <p style="text-align:center;color:#888;font-size:12px" id="ngTries">المحاولات: 0 / 10</p>`;
+  const input = c.querySelector('#ngInput');
+  const btn = c.querySelector('#ngBtn');
+  const hint = c.querySelector('#ngHint');
+  const triesEl = c.querySelector('#ngTries');
+
+  btn.onclick = () => {
+    const v = parseInt(input.value);
+    if (!v || v < 1 || v > 100) { hint.textContent = '⚠️ اكتب رقم بين 1 و 100'; return; }
+    tries++;
+    triesEl.textContent = `المحاولات: ${tries} / 10`;
+    if (v === target) {
+      const pts = tries <= 5 ? 200 : tries <= 7 ? 100 : 50;
+      hint.innerHTML = `🎉 صح! الرقم كان <b>${target}</b>. كسبت +${pts}`;
+      addPoints('Number Guess', pts);
+      btn.disabled = true; input.disabled = true;
+    } else if (tries >= 10) {
+      hint.innerHTML = `❌ خلصت المحاولات! الرقم كان <b>${target}</b>`;
+      btn.disabled = true; input.disabled = true;
+    } else {
+      hint.textContent = v < target ? '⬆️ أعلى' : '⬇️ أقل';
+      input.value = ''; input.focus();
+    }
+  };
+  input.focus();
+}
+
+/* ===== اللعبة 4: Math Sprint ===== */
+function initMath(c) {
+  c.innerHTML = `
+    <div class="tap-header"><div>⏱ <b id="msTime">30</b></div><div>✅ <b id="msScore">0</b></div></div>
+    <div style="text-align:center;font-size:2rem;font-weight:bold;margin:16px 0;color:#c7a0ff" id="msQ">-</div>
+    <input type="number" class="ng-input" id="msInput" placeholder="الإجابة...">
+    <p class="g-hint" id="msMsg"></p>`;
+  const timeEl = c.querySelector('#msTime');
+  const scoreEl = c.querySelector('#msScore');
+  const qEl = c.querySelector('#msQ');
+  const input = c.querySelector('#msInput');
+  const msg = c.querySelector('#msMsg');
+  let time = 30, score = 0, ended = false, ans = 0;
+
+  function newQ() {
+    const ops = ['+','-','×'];
+    const op = ops[Math.floor(Math.random()*3)];
+    let a, b;
+    if (op === '×') { a = Math.floor(Math.random()*9)+2; b = Math.floor(Math.random()*9)+2; ans = a*b; }
+    else if (op === '-') { a = Math.floor(Math.random()*50)+20; b = Math.floor(Math.random()*a); ans = a-b; }
+    else { a = Math.floor(Math.random()*50)+1; b = Math.floor(Math.random()*50)+1; ans = a+b; }
+    qEl.textContent = `${a} ${op} ${b} = ?`;
+  }
+
+  function check() {
+    if (ended) return;
+    const v = parseInt(input.value);
+    if (v === ans) { score++; scoreEl.textContent = score; msg.textContent = '✓ صح'; }
+    else { msg.textContent = `✗ الإجابة كانت ${ans}`; }
+    input.value = '';
+    newQ();
+  }
+  input.onkeydown = e => { if (e.key === 'Enter') check(); };
+
+  const timer = setInterval(() => {
+    time--; timeEl.textContent = time;
+    if (time <= 0) {
+      ended = true; clearInterval(timer);
+      input.disabled = true;
+      const pts = score * 5;
+      msg.innerHTML = `<b>خلص الوقت! ${score} إجابة صح → +${pts} نقطة</b>`;
+      qEl.textContent = '⏰';
+      if (pts > 0) addPoints('Math Sprint', pts);
+    }
+  }, 1000);
+
+  newQ();
+  setTimeout(() => input.focus(), 100);
+  return () => { ended = true; clearInterval(timer); };
+}
+
+/* ===== اللعبة 5: Reaction Test ===== */
+function initReaction(c) {
+  c.innerHTML = `
+    <p style="text-align:center;color:#aebdeb">اضغط "ابدأ"، ثم اضغط بأسرع وقت لما يبقى أخضر</p>
+    <div id="reactBox" style="height:200px;border-radius:14px;background:#1e293b;display:grid;place-items:center;cursor:pointer;margin:16px 0;transition:0.2s;font-weight:bold">
+      <span id="reactMsg">اضغط للبدء</span>
+    </div>
+    <p class="g-hint" id="reactResult"></p>`;
+  const box = c.querySelector('#reactBox');
+  const msg = c.querySelector('#reactMsg');
+  const result = c.querySelector('#reactResult');
+  let state = 'idle', start = 0, timeout = null;
+
+  box.onclick = () => {
+    if (state === 'idle') {
+      state = 'waiting';
+      box.style.background = '#78350f';
+      msg.textContent = '⏳ استنى اللون الأخضر...';
+      timeout = setTimeout(() => {
+        state = 'ready';
+        box.style.background = '#10b981';
+        msg.textContent = '👆 اضغط الآن!';
+        start = Date.now();
+      }, 1500 + Math.random() * 2000);
+    } else if (state === 'waiting') {
+      clearTimeout(timeout);
+      state = 'idle';
+      box.style.background = '#7f1d1d';
+      msg.textContent = '❌ بدري! اضغط للبدء من جديد';
+    } else if (state === 'ready') {
+      const rt = Date.now() - start;
+      state = 'idle';
+      box.style.background = '#1e293b';
+      msg.textContent = `${rt}ms`;
+      let pts = rt < 200 ? 200 : rt < 300 ? 150 : rt < 500 ? 100 : rt < 800 ? 50 : 20;
+      result.textContent = `+${pts} نقطة`;
+      addPoints('Reaction Test', pts);
+    }
+  };
+  return () => clearTimeout(timeout);
+}
+
+/* ===== اللعبة 6: General Quiz ===== */
+function initQuiz(c) {
+  const qs = [
+    { q: 'ما أكبر كوكب في المجموعة الشمسية؟', o: ['المشتري','زحل','الأرض','المريخ'], a: 'المشتري' },
+    { q: 'كم عدد قارات العالم؟', o: ['5','6','7','8'], a: '7' },
+    { q: 'ما عاصمة اليابان؟', o: ['بكين','سيول','طوكيو','بانكوك'], a: 'طوكيو' },
+    { q: 'ما أطول نهر في العالم؟', o: ['النيل','الأمازون','المسيسيبي','اليانغتسي'], a: 'النيل' },
+    { q: 'من اخترع المصباح الكهربائي؟', o: ['نيوتن','أينشتاين','أديسون','تسلا'], a: 'أديسون' },
+  ];
+  let idx = 0, correct = 0;
+
+  function render() {
+    if (idx >= qs.length) {
+      const pts = correct * 40;
+      c.innerHTML = `<div class="g-result"><h3>🎉 خلصت الكويز!</h3><p>${correct} / ${qs.length} إجابة صحيحة</p><p style="color:#10b981;font-size:1.4rem;font-weight:bold">+${pts} نقطة</p></div>`;
+      if (pts > 0) addPoints('General Quiz', pts);
+      return;
+    }
+    const q = qs[idx];
+    c.innerHTML = `<p style="color:#888;margin:0">سؤال ${idx+1} / ${qs.length}</p>
+      <h3 style="margin:10px 0 16px">${q.q}</h3>
+      <div id="qOpts"></div>`;
+    const opts = c.querySelector('#qOpts');
+    q.o.forEach(o => {
+      const b = document.createElement('button');
+      b.className = 'g-btn';
+      b.textContent = o;
+      b.onclick = () => {
+        if (o === q.a) correct++;
+        idx++;
+        render();
+      };
+      opts.appendChild(b);
+    });
+  }
+  render();
+}
+
+/* ===== ربط الألعاب بالأزرار ===== */
+const games = {
+  memory: { title: '🃏 Memory Match', init: initMemory },
+  tap: { title: '⚡ Speed Tap', init: initTap },
+  number: { title: '🎯 Number Guess', init: initNumber },
+  math: { title: '🧮 Math Sprint', init: initMath },
+  reaction: { title: '⚡ Reaction Test', init: initReaction },
+  quiz: { title: '🧠 General Quiz', init: initQuiz },
+};
+
+document.querySelectorAll('[data-game]').forEach(card => {
+  card.onclick = () => {
+    const g = games[card.dataset.game];
+    if (g) openGame(g.title, g.init);
+  };
+});
+
+/* ===== تهيئة الصفحة ===== */
+updateDisplays();
+
+// زر القائمة للموبايل
+document.getElementById('menu')?.addEventListener('click', () => document.querySelector('.sidebar')?.classList.toggle('open'));
+</script>
+</body>
+</html>
