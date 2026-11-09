@@ -1,20 +1,17 @@
 /* ==========================================
-   Speedora — Core Engine v5
-   (ربط مع السيرفر السحابي + إصلاح المستويات)
+   Speedora — Core Engine v6
+   (نظام الإحالة + المزامنة السحابية)
    ========================================== */
 (function () {
   const KEY = 'speedora_state';
-  
-  // ===== إعدادات السيرفر السحابي =====
   const API_URL = 'https://speedora-api.elsayedelhendawy15.workers.dev';
   
-  // إنشاء معرف مستخدم فريد وتخزينه (عشان السيرفر يعرف مين ده)
   let USER_ID = localStorage.getItem('speedora_user_id');
   if (!USER_ID) {
     USER_ID = 'user_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
     localStorage.setItem('speedora_user_id', USER_ID);
   }
-  let syncTimeout = null; // لمنع إرسال طلبات كثيرة للسيرفر في وقت واحد
+  let syncTimeout = null;
 
   const DEFAULTS = {
     balance: 0, earned: 0, redeemed: 0, activity: [],
@@ -24,7 +21,9 @@
     unlockedAchievements: [],
     bots: {}, lastBotUpdate: null,
     purchasedRewards: [],
-    welcomeShown: false
+    welcomeShown: false,
+    referralCode: null,
+    referredBy: null
   };
 
   const POINTS_PER_EGP = 100;
@@ -93,26 +92,28 @@
     { name: 'FireDragon', avatar: 'D', base: 6789 }
   ];
 
+  function generateRefCode() {
+    return 'SPD-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+  }
+
   const load = () => {
     try {
       const raw = JSON.parse(localStorage.getItem(KEY));
       if (!raw) {
-        // أول زيارة - مكافأة ترحيب
         const fresh = { ...DEFAULTS };
         fresh.balance = 1250;
         fresh.earned = 1250;
         fresh.welcomeShown = true;
-        fresh.activity = [{
-          type: 'bonus',
-          title: 'مكافأة الترحيب',
-          points: 1250,
-          date: new Date().toISOString()
-        }];
+        fresh.referralCode = generateRefCode();
+        fresh.activity = [{ type: 'bonus', title: 'مكافأة الترحيب', points: 1250, date: new Date().toISOString() }];
         localStorage.setItem(KEY, JSON.stringify(fresh));
         return fresh;
       }
       const s = { ...DEFAULTS, ...raw };
-      // Migration: رصيد بدون مكتسب
+      if (!s.referralCode) {
+        s.referralCode = generateRefCode();
+        localStorage.setItem(KEY, JSON.stringify(s));
+      }
       if (s.balance > 0 && s.earned === 0 && (!s.activity || s.activity.length === 0)) {
         s.earned = s.balance;
         s.activity = [{ type: 'bonus', title: 'مكافأة الترحيب', points: s.balance, date: new Date().toISOString() }];
@@ -122,12 +123,10 @@
     } catch { return { ...DEFAULTS }; }
   };
 
-  // ===== دالة الحفظ (المحدثة للربط بالسحابة) =====
   const save = (s) => {
     localStorage.setItem(KEY, JSON.stringify(s));
     window.dispatchEvent(new CustomEvent('pointsUpdated', { detail: s }));
     
-    // إرسال للسيرفر بعد ثانية ونصف (عشان ميبعتش طلبات كتير أثناء اللعب السريع)
     if (syncTimeout) clearTimeout(syncTimeout);
     syncTimeout = setTimeout(async () => {
       try {
@@ -136,10 +135,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: USER_ID, state: s })
         });
-        console.log('☁️ تم الحفظ في السحابة بنجاح');
-      } catch (e) {
-        console.warn('⚠️ فشل الاتصال بالسحابة (البيانات محفوظة محلياً):', e);
-      }
+      } catch (e) { console.warn('⚠️ فشل الاتصال بالسحابة:', e); }
     }, 1500);
   };
 
@@ -308,14 +304,7 @@
       localStorage.setItem('speedora_user_name', name);
       window.dispatchEvent(new CustomEvent('userNameChanged', { detail: name }));
     },
-    getReferralCode() {
-      let code = localStorage.getItem('speedora_ref_code');
-      if (!code) {
-        code = 'SPD' + Math.random().toString(36).slice(2, 8).toUpperCase();
-        localStorage.setItem('speedora_ref_code', code);
-      }
-      return code;
-    },
+    getReferralCode() { return load().referralCode; },
 
     gamesPlayedToday() {
       const s = load();
@@ -341,32 +330,11 @@
       const lvl = calcLevel(s.earned);
       const cur = LEVELS[lvl - 1] || 0;
       const nxt = LEVELS[lvl] !== undefined ? LEVELS[lvl] : null;
-
-      if (nxt === null) {
-        return {
-          level: lvl,
-          name: LEVEL_NAMES[lvl - 1] || 'أسطوري',
-          current: cur,
-          next: null,
-          progress: 100,
-          remaining: 0,
-          isMax: true
-        };
-      }
-
+      if (nxt === null) return { level: lvl, name: LEVEL_NAMES[lvl - 1] || 'أسطوري', current: cur, next: null, progress: 100, remaining: 0, isMax: true };
       const rangeSize = nxt - cur;
       const progress = rangeSize > 0 ? Math.min(100, Math.max(0, ((s.earned - cur) / rangeSize) * 100)) : 100;
       const remaining = Math.max(0, nxt - s.earned);
-
-      return {
-        level: lvl,
-        name: LEVEL_NAMES[lvl - 1] || 'أسطوري',
-        current: cur,
-        next: nxt,
-        progress: progress,
-        remaining: remaining,
-        isMax: false
-      };
+      return { level: lvl, name: LEVEL_NAMES[lvl - 1] || 'أسطوري', current: cur, next: nxt, progress: progress, remaining: remaining, isMax: false };
     },
     getConversion: () => ({ rate: POINTS_PER_EGP, minRedeem: MIN_REDEEM }),
     streakBonus,
@@ -404,42 +372,25 @@
         if (!window._audioCtx) window._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const ctx = window._audioCtx;
         const now = ctx.currentTime;
-        const notes = {
-          point: [523.25, 659.25, 783.99],
-          success: [523.25, 659.25, 783.99, 1046.5],
-          fail: [329.63, 261.63],
-          spin: [261.63, 329.63, 392.00, 523.25],
-          achievement: [659.25, 783.99, 987.77, 1318.51],
-        };
+        const notes = { point: [523.25, 659.25, 783.99], success: [523.25, 659.25, 783.99, 1046.5], fail: [329.63, 261.63], spin: [261.63, 329.63, 392.00, 523.25], achievement: [659.25, 783.99, 987.77, 1318.51] };
         const seq = notes[type] || notes.point;
         seq.forEach((freq, i) => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.value = freq;
+          const osc = ctx.createOscillator(); const gain = ctx.createGain();
+          osc.type = 'sine'; osc.frequency.value = freq;
           gain.gain.setValueAtTime(0, now + i * 0.08);
           gain.gain.linearRampToValueAtTime(0.15, now + i * 0.08 + 0.01);
           gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.25);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(now + i * 0.08);
-          osc.stop(now + i * 0.08 + 0.3);
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.start(now + i * 0.08); osc.stop(now + i * 0.08 + 0.3);
         });
       } catch (e) {}
     },
 
     showToast(message, type = 'info') {
-      const colors = {
-        success: 'linear-gradient(135deg, #10b981, #059669)',
-        error: 'linear-gradient(135deg, #ef4444, #dc2626)',
-        info: 'linear-gradient(135deg, #6366f1, #4f46e5)',
-        warning: 'linear-gradient(135deg, #f59e0b, #d97706)'
-      };
+      const colors = { success: 'linear-gradient(135deg, #10b981, #059669)', error: 'linear-gradient(135deg, #ef4444, #dc2626)', info: 'linear-gradient(135deg, #6366f1, #4f46e5)', warning: 'linear-gradient(135deg, #f59e0b, #d97706)' };
       const icons = { success: '✓', error: '✕', info: 'ℹ', warning: '⚠' };
-      const old = document.getElementById('sp-toast');
-      if (old) old.remove();
-      const t = document.createElement('div');
-      t.id = 'sp-toast';
+      const old = document.getElementById('sp-toast'); if (old) old.remove();
+      const t = document.createElement('div'); t.id = 'sp-toast';
       t.style.cssText = `position:fixed;top:20px;left:50%;transform:translateX(-50%);background:${colors[type]||colors.info};color:white;padding:14px 22px;border-radius:12px;z-index:99999;font-weight:700;font-size:14px;box-shadow:0 10px 40px rgba(0,0,0,.5);display:flex;align-items:center;gap:10px;max-width:90%;font-family:'Cairo',sans-serif;direction:rtl;`;
       t.innerHTML = `<span style="font-size:18px;background:rgba(255,255,255,.2);border-radius:50%;width:26px;height:26px;display:grid;place-items:center;flex-shrink:0">${icons[type]||'ℹ'}</span><span>${message}</span>`;
       document.body.appendChild(t);
@@ -448,98 +399,71 @@
 
     getLiveFeed() {
       const names = ['أحمد', 'محمد', 'سارة', 'ياسمين', 'علي', 'فاطمة', 'حسن', 'مريم', 'كريم', 'نور'];
-      const actions = [
-        { icon: '🎮', text: 'كسب نقاط من لعبة' },
-        { icon: '🎡', text: 'لف العجلة' },
-        { icon: '🎁', text: 'استلم المكافأة اليومية' },
-        { icon: '🏅', text: 'فتح إنجاز جديد' },
-        { icon: '🛒', text: 'اشترى مكافأة' },
-        { icon: '🎫', text: 'فاز في سكراتش' }
-      ];
+      const actions = [{ icon: '🎮', text: 'كسب نقاط من لعبة' }, { icon: '🎡', text: 'لف العجلة' }, { icon: '🎁', text: 'استلم المكافأة اليومية' }, { icon: '🏅', text: 'فتح إنجاز جديد' }, { icon: '🛒', text: 'اشترى مكافأة' }, { icon: '🎫', text: 'فاز في سكراتش' }];
       const items = [];
       for (let i = 0; i < 8; i++) {
-        const name = names[Math.floor(Math.random() * names.length)];
-        const action = actions[Math.floor(Math.random() * actions.length)];
-        const pts = [50, 100, 200, 300, 500, 1000][Math.floor(Math.random() * 6)];
-        const minsAgo = Math.floor(Math.random() * 15) + 1;
-        items.push({ name, action: action.icon, text: action.text, pts, minsAgo });
+        items.push({ name: names[Math.floor(Math.random() * names.length)], action: actions[Math.floor(Math.random() * actions.length)].icon, text: actions[Math.floor(Math.random() * actions.length)].text, pts: [50, 100, 200, 300, 500, 1000][Math.floor(Math.random() * 6)], minsAgo: Math.floor(Math.random() * 15) + 1 });
       }
       return items;
     }
   };
 
   const style = document.createElement('style');
-  style.textContent = `
-    @keyframes spSlide { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-    #speedora-live-bar {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      background: linear-gradient(90deg, #101831, #1a1042);
-      border-top: 1px solid #753cff;
-      padding: 10px 14px;
-      z-index: 9990;
-      font-family: 'Cairo', sans-serif;
-      display: flex; align-items: center; gap: 10px;
-      font-size: 12px; color: #c7a0ff;
-      box-shadow: 0 -4px 20px rgba(117,60,255,.3);
-      direction: rtl;
-    }
-    #speedora-live-bar .dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: spPulse 1.5s infinite; flex-shrink: 0; }
-    #speedora-live-bar .feed { flex: 1; overflow: hidden; position: relative; height: 18px; }
-    #speedora-live-bar .feed span { position: absolute; width: 100%; animation: spSlide .5s ease-out; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    @keyframes spPulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-    body { padding-bottom: 50px !important; }
-  `;
+  style.textContent = `@keyframes spSlide { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } } #speedora-live-bar { position: fixed; bottom: 0; left: 0; right: 0; background: linear-gradient(90deg, #101831, #1a1042); border-top: 1px solid #753cff; padding: 10px 14px; z-index: 9990; font-family: 'Cairo', sans-serif; display: flex; align-items: center; gap: 10px; font-size: 12px; color: #c7a0ff; box-shadow: 0 -4px 20px rgba(117,60,255,.3); direction: rtl; } #speedora-live-bar .dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: spPulse 1.5s infinite; flex-shrink: 0; } #speedora-live-bar .feed { flex: 1; overflow: hidden; position: relative; height: 18px; } #speedora-live-bar .feed span { position: absolute; width: 100%; animation: spSlide .5s ease-out; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } @keyframes spPulse { 0%,100%{opacity:1} 50%{opacity:.3} } body { padding-bottom: 50px !important; }`;
   document.head.appendChild(style);
 
   window.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('speedora-live-bar')) return;
-    const bar = document.createElement('div');
-    bar.id = 'speedora-live-bar';
+    const bar = document.createElement('div'); bar.id = 'speedora-live-bar';
     bar.innerHTML = `<span class="dot"></span><div class="feed" id="spFeed"></div><span style="font-size:10px;opacity:.7">🔴 مباشر</span>`;
     document.body.appendChild(bar);
-    const feed = document.getElementById('spFeed');
-    const items = window.Speedora.getLiveFeed();
-    let idx = 0;
-    function showNext() {
-      const it = items[idx % items.length];
-      feed.innerHTML = `<span>${it.action} <b>${it.name}</b> ${it.text} <b style="color:#10b981">+${it.pts}</b> · قبل ${it.minsAgo} د</span>`;
-      idx++;
-      setTimeout(showNext, 4000);
-    }
+    const feed = document.getElementById('spFeed'); const items = window.Speedora.getLiveFeed(); let idx = 0;
+    function showNext() { const it = items[idx % items.length]; feed.innerHTML = `<span>${it.action} <b>${it.name}</b> ${it.text} <b style="color:#10b981">+${it.pts}</b> · قبل ${it.minsAgo} د</span>`; idx++; setTimeout(showNext, 4000); }
     showNext();
   });
 
-  window.addEventListener('levelUp', e => {
-    if (window.Speedora) window.Speedora.showToast(`🎉 وصلت للمستوى ${e.detail.level} - ${e.detail.name}!`, 'success');
-  });
-  window.addEventListener('achievementUnlocked', e => {
-    if (window.Speedora) window.Speedora.showToast(`${e.detail.icon} إنجاز: ${e.detail.title} (+${e.detail.reward})`, 'success');
-  });
+  window.addEventListener('levelUp', e => { if (window.Speedora) window.Speedora.showToast(`🎉 وصلت للمستوى ${e.detail.level} - ${e.detail.name}!`, 'success'); });
+  window.addEventListener('achievementUnlocked', e => { if (window.Speedora) window.Speedora.showToast(`${e.detail.icon} إنجاز: ${e.detail.title} (+${e.detail.reward})`, 'success'); });
 
-  // ===== 🆕 تحميل البيانات من السحابة عند فتح الموقع =====
   async function loadFromCloud() {
     try {
       const res = await fetch(`${API_URL}/api/load?userId=${USER_ID}`);
       const data = await res.json();
-      
       if (data.ok && data.state) {
         const local = JSON.parse(localStorage.getItem(KEY) || '{}');
-        
-        // لو السحابة فيها نقاط أكتر من المتصفح (يعني المستخدم دخل من جهاز جديد مثلاً)، نستخدم بيانات السحابة
         if (!local.earned || (data.state.earned > local.earned)) {
-          console.log('☁️ تم استرجاع أحدث البيانات من السحابة');
           localStorage.setItem(KEY, JSON.stringify(data.state));
           window.dispatchEvent(new CustomEvent('pointsUpdated', { detail: data.state }));
         }
       }
-    } catch (e) {
-      console.warn('⚠️ تعذر التحميل من السحابة (ممكن يكون نت ضعيف)', e);
+    } catch (e) { console.warn('⚠️ تعذر التحميل من السحابة', e); }
+  }
+
+  function processReferral() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const incomingRef = urlParams.get('ref');
+    if (incomingRef) {
+      const s = load();
+      if (!s.referredBy && s.totalGamesPlayed === 0 && s.balance <= 1250) {
+        s.referredBy = incomingRef;
+        s.balance += 500;
+        s.earned += 500;
+        s.activity.unshift({ type: 'bonus', title: 'مكافأة الترحيب (كود إحالة)', points: 500, date: new Date().toISOString() });
+        save(s);
+        window.history.replaceState({}, document.title, window.location.pathname);
+        if (window.Speedora) window.Speedora.showToast('🎉 تم إضافة 500 نقطة من كود الإحالة!', 'success');
+        fetch(`${API_URL}/api/referral/apply`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ newUserId: USER_ID, referralCode: incomingRef })
+        }).catch(e => console.warn('فشل تطبيق الإحالة', e));
+      }
     }
   }
 
-  // تشغيل التحميل بعد فتح الصفحة بنصف ثانية
   window.addEventListener('DOMContentLoaded', () => {
     setTimeout(loadFromCloud, 500); 
+    setTimeout(processReferral, 1000); 
   });
 
 })();
