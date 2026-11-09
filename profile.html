@@ -35,8 +35,14 @@
   .referral-code { font-size: 24px; font-weight: 800; color: #c7a0ff; letter-spacing: 3px; margin: 6px 0; }
   .copy-btn { background: #1e293b; color: white; border: 1px solid #334155; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 12px; }
   .copy-btn:hover { background: #334155; }
-  .link-box { background: #0a1227; border-radius: 10px; padding: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .link-box { background: #0a1227; border-radius: 10px; padding: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 16px; }
   .link-box input { background: transparent; border: none; color: #8998ba; font-size: 11px; flex: 1; overflow: hidden; text-overflow: ellipsis; }
+
+  /* 🆕 ستايل سجل الإحالات */
+  .ref-list { display: flex; flex-direction: column; gap: 6px; }
+  .ref-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #0a1227; border-radius: 8px; font-size: 12px; }
+  .ref-item span { color: #f4f6ff; }
+  .ref-item small { color: #8998ba; font-size: 10px; }
 </style>
 </head>
 <body data-page="profile">
@@ -108,6 +114,12 @@
           <input type="text" id="refLink" readonly value="">
           <button class="copy-btn" id="copyLink" style="white-space:nowrap">🔗 نسخ اللينك</button>
         </div>
+        
+        <!-- 🆕 سجل الإحالات -->
+        <h3 style="font-size:13px;margin:0 0 10px;color:#c7a0ff">👥 الذين دعوتهم</h3>
+        <div id="referralList" class="ref-list">
+          <!-- سيتم تعبئته بالكود -->
+        </div>
       </div>
 
       <div class="section-card">
@@ -125,7 +137,7 @@
   </div>
 </div>
 
-<script src="core.js?v=6"></script>
+<script src="core.js?v=7"></script>
 <script>
 const $ = id => document.getElementById(id);
 const fmt = n => Number(n || 0).toLocaleString('en-US');
@@ -153,6 +165,21 @@ function render() {
   $('refCode').textContent = refCode;
   const fullLink = window.location.origin + '/?ref=' + refCode;
   $('refLink').value = fullLink;
+
+  // 🆕 عرض قائمة الإحالات
+  const refList = $('referralList');
+  const referrals = s.referrals || [];
+  
+  if (referrals.length === 0) {
+    refList.innerHTML = '<p style="text-align:center;color:#8998ba;font-size:11px;margin:10px 0">لم تدعُ أحداً بعد. شارك كودك واكسب 500 نقطة عن كل صديق!</p>';
+  } else {
+    refList.innerHTML = referrals.map(r => `
+      <div class="ref-item">
+        <span>👤 ${r.name}</span>
+        <small>${new Date(r.date).toLocaleDateString('ar-EG')}</small>
+      </div>
+    `).join('');
+  }
 
   // badges
   const achs = Speedora.getAchievements();
