@@ -3,6 +3,12 @@
    ========================================== */
 (function () {
   const KEY = 'speedora_state';
+   // كود مؤقت لمسح البيانات
+if (window.location.search.includes('reset=1')) {
+    localStorage.clear();
+    window.location.href = '/auth.html'; // توجيه مباشر لصفحة الدخول
+    return;
+}
   const API_URL = 'https://speedora-api.elsayedelhendawy15.workers.dev';
   
   let USER_ID = localStorage.getItem('speedora_user_id');
