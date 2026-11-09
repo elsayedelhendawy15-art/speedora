@@ -3,55 +3,70 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>المتجر | Speedora</title>
+<title>الألعاب | Speedora</title>
 <link rel="stylesheet" href="styles.css">
 <style>
-  .store-hero { background: linear-gradient(135deg, #43228e, #101831); border-radius: 18px; padding: 26px; text-align: center; margin-bottom: 16px; }
-  .store-hero h2 { margin: 0 0 6px; font-size: 22px; }
-  .store-hero p { margin: 0; color: #b5b7d3; font-size: 13px; }
-  .store-hero .balance-big { font-size: 32px; font-weight: 800; color: #c7a0ff; margin-top: 12px; }
-  .store-hero .egp-small { color: #87e5d6; font-size: 12px; }
-  .store-filters { display: flex; gap: 8px; margin: 16px 0; flex-wrap: wrap; }
-  .store-filters button { background: #0f1830; color: #aab8d7; border: 1px solid #2b385b; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 12px; font-family: inherit; }
-  .store-filters button.active { background: #43228e; color: white; border-color: #8b5cf6; }
-  .store-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-  .store-item { background: linear-gradient(145deg, #111a34, #0b1225); border: 1px solid #223052; border-radius: 14px; padding: 16px; text-align: center; position: relative; transition: .2s; }
-  .store-item:hover { border-color: #6845c1; transform: translateY(-3px); }
-  .store-item .item-icon { font-size: 42px; margin-bottom: 8px; }
-  .store-item .badge-new { position: absolute; top: 8px; left: 8px; font-size: 9px; padding: 3px 8px; border-radius: 20px; background: #ef4444; color: white; font-weight: bold; }
-  .store-item h3 { font-size: 14px; margin: 6px 0 4px; }
-  .store-item p { font-size: 11px; color: #8998ba; margin: 0 0 10px; min-height: 28px; }
-  .store-item .price { font-size: 15px; font-weight: 800; color: #c7a0ff; margin-bottom: 8px; }
-  .store-item .buy-btn { width: 100%; background: linear-gradient(100deg, #d43bea, #642cff); color: white; border: 0; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: bold; font-family: inherit; font-size: 12px; }
-  .store-item .buy-btn:disabled { background: #222; cursor: not-allowed; opacity: .5; }
-  .store-item .buy-btn.affordable { background: linear-gradient(100deg, #10b981, #059669); }
-  .purchases-section { margin-top: 24px; }
-  .purchases-section h2 { font-size: 16px; margin-bottom: 12px; }
-  .purchase-row { background: #0e172d; border: 1px solid #223052; border-radius: 12px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12px; }
-  .purchase-row b { color: #c7a0ff; }
-  .purchase-row small { color: #8998ba; font-size: 10px; display: block; margin-top: 2px; }
-  .empty-store { text-align: center; padding: 40px; color: #8998ba; font-size: 13px; }
+  .catalog { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .game-card { position: relative; overflow: hidden; cursor: pointer; transition: 0.2s; background: linear-gradient(145deg, #111a34, #0b1225); border: 1px solid #223052; border-radius: 14px; }
+  .game-card:hover { transform: translateY(-3px); border-color: #753cff; }
+  .game-card .cover { height: 100px; display: grid; place-items: center; font-size: 46px; background: radial-gradient(circle,#6d28d9,#14152f); }
+  .game-card .cardbody { padding: 12px; }
+  .game-card h3 { font-size: 14px; margin: 0 0 4px; }
+  .game-card p { font-size: 11px; color: #9eaccb; margin: 0 0 8px; min-height: 30px; }
+  .game-card .pts-badge { font-size: 11px; color: #87e5d6; font-weight: 700; }
+  .game-card.scratch { border-color: #f59e0b; }
+  .game-card.scratch .cover { background: radial-gradient(circle,#f59e0b,#78350f); }
 
-  /* Purchase modal */
-  .pmodal { position: fixed; inset: 0; background: rgba(0,0,0,.9); z-index: 9999; display: grid; place-items: center; padding: 20px; }
-  .pmodal[hidden] { display: none; }
-  .pmodal-content { background: linear-gradient(145deg, #1a1042, #101831); border: 1px solid #8b5cf6; border-radius: 20px; padding: 28px; max-width: 380px; width: 100%; text-align: center; }
-  .pmodal-content .big-icon { font-size: 60px; margin-bottom: 12px; }
-  .pmodal-content h3 { margin: 0 0 6px; font-size: 20px; }
-  .pmodal-content p { color: #b5b7d3; font-size: 13px; margin: 8px 0 16px; }
-  .pmodal-content .code { background: #0a1227; border: 1px dashed #8b5cf6; padding: 12px; border-radius: 10px; font-size: 15px; letter-spacing: 2px; font-weight: bold; color: #c7a0ff; margin: 12px 0; word-break: break-all; }
-  .pmodal-content button { background: linear-gradient(100deg, #d43bea, #642cff); color: white; border: 0; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-family: inherit; font-weight: bold; font-size: 14px; }
+  .game-modal { position: fixed; inset: 0; background: rgba(0,0,0,.95); z-index: 999; display: grid; place-items: center; padding: 16px; }
+  .game-modal[hidden] { display: none; }
+  .game-modal-content { background: #101831; border: 1px solid #3c2b78; border-radius: 20px; padding: 22px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
+  .game-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .game-modal-header h2 { font-size: 18px; margin: 0; }
+  .game-close { background: #1e293b; border: 0; color: white; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 16px; }
+
+  .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 16px 0; }
+  .memory-card { aspect-ratio: 1; background: linear-gradient(135deg,#6d28d9,#4c1d95); border-radius: 10px; cursor: pointer; display: grid; place-items: center; font-size: 26px; transition: 0.2s; user-select: none; }
+  .memory-card.flipped { background: #1e293b; }
+  .memory-card.matched { background: #065f46; cursor: default; }
+
+  .tap-header { display: flex; justify-content: space-between; padding: 10px 0; font-size: 14px; }
+  .tap-area { position: relative; height: 260px; background: #0a1227; border-radius: 12px; margin: 10px 0; overflow: hidden; }
+  .tap-target { position: absolute; width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle,#f472b6,#be185d); cursor: pointer; animation: pulse 0.6s infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+
+  .ng-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #333; background: #0a1227; color: white; font-size: 16px; margin-bottom: 10px; font-family: inherit; }
+  .g-btn { width: 100%; padding: 12px; margin: 5px 0; background: #1e293b; border: 1px solid #333; color: white; border-radius: 10px; cursor: pointer; font-size: 14px; text-align: center; font-family: inherit; }
+  .g-btn:hover { background: #2a3a5a; border-color: #753cff; }
+  .g-btn-primary { background: linear-gradient(100deg,#d43bea,#642cff); border: 0; }
+  .g-hint { text-align: center; min-height: 24px; color: #aebdeb; margin-top: 8px; font-size: 13px; }
+
+  .ttt-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 300px; margin: 16px auto; }
+  .ttt-cell { aspect-ratio: 1; background: #1e293b; border-radius: 10px; display: grid; place-items: center; font-size: 40px; font-weight: bold; cursor: pointer; transition: .2s; }
+  .ttt-cell:hover { background: #2a3a5a; }
+  .ttt-cell.x { color: #d43bea; }
+  .ttt-cell.o { color: #10b981; }
+
+  .color-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0; }
+  .color-cell { aspect-ratio: 1; border-radius: 12px; cursor: pointer; transition: .2s; }
+  .color-cell:hover { transform: scale(1.05); }
+  .color-target { text-align: center; padding: 20px; background: #0a1227; border-radius: 12px; margin-bottom: 16px; }
+  .color-target .swatch { width: 80px; height: 80px; border-radius: 12px; margin: 10px auto; }
+  .color-target p { margin: 0; color: #8998ba; font-size: 13px; }
+
+  .scratch-canvas { width: 100%; height: 200px; border-radius: 14px; cursor: crosshair; display: block; touch-action: none; }
+  .scratch-info { text-align: center; margin: 12px 0; color: #b5b7d3; font-size: 13px; }
+  .scratch-result { text-align: center; padding: 20px; font-size: 20px; font-weight: bold; color: #10b981; }
 </style>
 </head>
-<body data-page="rewards">
+<body data-page="games">
 <div class="shell">
   <aside class="sidebar">
     <a class="brand" href="index.html"><span class="bolt">ϟ</span><span>Speedora<small>Play. Complete. Earn.</small></span></a>
     <nav class="nav">
       <a href="index.html">⌂ Home</a>
-      <a href="games.html">🎮 Games</a>
+      <a class="active" href="games.html">🎮 Games</a>
       <a href="earn.html">▤ Earn</a>
-      <a class="active" href="rewards.html">🎁 Rewards</a>
+      <a href="rewards.html">🎁 Rewards</a>
       <a href="wheel.html">🎡 Wheel</a>
       <a href="achievements.html">🏅 Achievements</a>
       <a href="leaderboard.html">🏆 Leaderboard</a>
@@ -63,45 +78,35 @@
   <div class="main">
     <header class="top">
       <button class="menu" id="menu">☰</button>
-      <div class="crumb">Rewards Store</div>
+      <div class="crumb">Games</div>
       <div class="actions"><a class="user" href="profile.html"><span class="avatar">A</span><span><b id="topName">Player</b><br><small id="topBalance">0 pts</small></span></a></div>
     </header>
     <main class="content">
       <div class="pagehead">
-        <div><span class="eyebrow">REWARDS STORE</span><h1>المتجر</h1><p>استبدل نقاطك بمكافآت حقيقية</p></div>
+        <div><span class="eyebrow">PLAY & WIN</span><h1>الألعاب</h1><p>10 ألعاب - العب واكسب نقاط فوراً</p></div>
+        <span class="badge">الرصيد: <b id="balanceBadge">0</b> pts</span>
       </div>
 
-      <div class="store-hero">
-        <h2>رصيدك الحالي</h2>
-        <div class="balance-big" id="bigBalance">0</div>
-        <div class="egp-small" id="egpBalance">≈ 0 EGP</div>
-      </div>
-
-      <div class="store-filters" id="storeFilters">
-        <button class="active" data-filter="all">الكل</button>
-        <button data-filter="cheap">رخيص (أقل من 3000)</button>
-        <button data-filter="premium">مميز</button>
-        <button data-filter="available">متاح لي</button>
-      </div>
-
-      <div class="store-grid" id="storeGrid"></div>
-
-      <div class="purchases-section">
-        <h2>🛍️ مشترياتي</h2>
-        <div id="purchasesList"></div>
+      <div class="catalog" id="gamesGrid">
+        <article class="card game-card" data-game="memory"><div class="cover">🃏</div><div class="cardbody"><h3>Memory Match</h3><p>اعثر على الأزواج المتطابقة</p><span class="pts-badge">+150 نقطة</span></div></article>
+        <article class="card game-card" data-game="tap"><div class="cover">⚡</div><div class="cardbody"><h3>Speed Tap</h3><p>اضغط الدوائر بسرعة</p><span class="pts-badge">+5 لكل ضغطة</span></div></article>
+        <article class="card game-card" data-game="number"><div class="cover">🎯</div><div class="cardbody"><h3>Number Guess</h3><p>خمّن الرقم 1-100</p><span class="pts-badge">حتى +200</span></div></article>
+        <article class="card game-card" data-game="math"><div class="cover">🧮</div><div class="cardbody"><h3>Math Sprint</h3><p>حل مسائل في 30 ثانية</p><span class="pts-badge">+5 لكل صح</span></div></article>
+        <article class="card game-card" data-game="reaction"><div class="cover">⚡</div><div class="cardbody"><h3>Reaction Test</h3><p>اضغط بأسرع وقت</p><span class="pts-badge">حتى +200</span></div></article>
+        <article class="card game-card" data-game="quiz"><div class="cover">🧠</div><div class="cardbody"><h3>General Quiz</h3><p>5 أسئلة عامة</p><span class="pts-badge">+40 لكل صح</span></div></article>
+        <article class="card game-card" data-game="tictactoe"><div class="cover">❌</div><div class="cardbody"><h3>Tic-Tac-Toe</h3><p>تحدَّ الكمبيوتر</p><span class="pts-badge">+100 عند الفوز</span></div></article>
+        <article class="card game-card" data-game="colors"><div class="cover">🎨</div><div class="cardbody"><h3>Color Match</h3><p>طابق اللون الصحيح</p><span class="pts-badge">+10 لكل صح</span></div></article>
+        <article class="card game-card" data-game="snake"><div class="cover">🐍</div><div class="cardbody"><h3>Snake</h3><p>الثعبان الكلاسيكي</p><span class="pts-badge">+5 لكل تفاحة</span></div></article>
+        <article class="card game-card scratch" data-game="scratch"><div class="cover">🎫</div><div class="cardbody"><h3>Scratch Card</h3><p>سكراتش يومي - حتى 1500</p><span class="pts-badge">يومياً</span></div></article>
       </div>
     </main>
   </div>
 </div>
 
-<!-- Purchase Modal -->
-<div class="pmodal" id="pModal" hidden>
-  <div class="pmodal-content">
-    <div class="big-icon" id="pIcon">🎉</div>
-    <h3 id="pTitle">مبروك!</h3>
-    <p id="pDesc">تم الشراء بنجاح</p>
-    <div class="code" id="pCode" style="display:none"></div>
-    <button id="pClose">تم</button>
+<div class="game-modal" id="gameModal" hidden>
+  <div class="game-modal-content">
+    <div class="game-modal-header"><h2 id="gameTitle">Game</h2><button class="game-close" id="gameClose">✕</button></div>
+    <div id="gameArea"></div>
   </div>
 </div>
 
@@ -109,93 +114,387 @@
 <script>
 const $ = id => document.getElementById(id);
 const fmt = n => Number(n || 0).toLocaleString('en-US');
-let activeFilter = 'all';
+const modal = $('gameModal'), gameTitle = $('gameTitle'), gameArea = $('gameArea');
+let cleanup = null;
 
-function render() {
+function updateTop() {
   const s = Speedora.get();
-  const conv = Speedora.getConversion();
-  $('topName').textContent = Speedora.getUserName();
+  $('balanceBadge').textContent = fmt(s.balance);
   $('topBalance').textContent = fmt(s.balance) + ' pts';
-  $('bigBalance').textContent = fmt(s.balance);
-  $('egpBalance').textContent = `≈ ${(s.balance / conv.rate).toFixed(2)} EGP`;
+  $('topName').textContent = Speedora.getUserName();
+}
 
-  const store = Speedora.getStore();
-  let filtered = store;
-  if (activeFilter === 'cheap') filtered = store.filter(r => r.cost < 3000);
-  else if (activeFilter === 'premium') filtered = store.filter(r => r.cost >= 5000);
-  else if (activeFilter === 'available') filtered = store.filter(r => r.cost <= s.balance);
+function openGame(title, initFn) {
+  gameTitle.textContent = title;
+  gameArea.innerHTML = '';
+  modal.hidden = false;
+  if (cleanup) { cleanup(); cleanup = null; }
+  cleanup = initFn(gameArea) || null;
+}
+function closeGame() {
+  if (cleanup) { cleanup(); cleanup = null; }
+  gameArea.innerHTML = '';
+  modal.hidden = true;
+}
+$('gameClose').onclick = closeGame;
 
-  $('storeGrid').innerHTML = filtered.length === 0 
-    ? '<div class="empty-store">لا توجد منتجات في هذا القسم</div>'
-    : filtered.map(r => {
-      const canBuy = s.balance >= r.cost;
-      return `<div class="store-item">
-        ${r.badge ? `<span class="badge-new">${r.badge}</span>` : ''}
-        <div class="item-icon">${r.icon}</div>
-        <h3>${r.title}</h3>
-        <p>${r.desc}</p>
-        <div class="price">${fmt(r.cost)} نقطة</div>
-        <button class="buy-btn ${canBuy ? 'affordable' : ''}" data-id="${r.id}" ${canBuy ? '' : 'disabled'}>
-          ${canBuy ? '🛒 اشترِ الآن' : `محتاج ${fmt(r.cost - s.balance)} إضافية`}
-        </button>
-      </div>`;
-    }).join('');
+function awardGame(title, pts) {
+  Speedora.addPoints(pts, title, 'game');
+  Speedora.playSound('success');
+  updateTop();
+}
 
-  // Purchases
-  const purchases = Speedora.getPurchases();
-  $('purchasesList').innerHTML = purchases.length === 0
-    ? '<div class="empty-store">لم تشترِ أي مكافأة بعد</div>'
-    : purchases.slice().reverse().slice(0, 10).map(p => `
-      <div class="purchase-row">
-        <div><b>${p.title || p.id}</b><small>${new Date(p.date).toLocaleString('ar-EG')}</small></div>
-        <div style="color:#10b981">✓</div>
-      </div>`).join('');
-
-  // Bind buy buttons
-  document.querySelectorAll('.buy-btn').forEach(b => {
-    b.onclick = (e) => {
-      const r = Speedora.purchase(b.dataset.id);
-      if (r.error) { Speedora.showToast(r.error, 'warning'); return; }
-      Speedora.playSound('success');
-      
-      if (r.reward.id === 'mystery_box') {
-        showPurchaseModal('🎁', 'صندوق الغموض!', `مبروك! كسبت <b style="color:#10b981;font-size:1.5em">${fmt(r.mysteryWon)} نقطة</b> من الصندوق!`, null);
-      } else {
-        const code = 'SPD-' + Math.random().toString(36).slice(2, 10).toUpperCase();
-        showPurchaseModal(r.reward.icon, `تم شراء ${r.reward.title}!`, r.reward.desc + '<br><br>كود الاستبدال:', code);
-      }
-      render();
+/* ===== Games ===== */
+function initMemory(c) {
+  const emojis = ['🎮','🎁','⚡','🏆','💎','🔥','⭐','🚀'];
+  const cards = [...emojis, ...emojis].map((e,i)=>({id:i,emoji:e,flipped:false,matched:false})).sort(()=>Math.random()-0.5);
+  c.innerHTML = '<div class="memory-grid" id="memGrid"></div><p class="g-hint" id="memStatus">اعثر على كل الأزواج!</p>';
+  const grid = c.querySelector('#memGrid'), status = c.querySelector('#memStatus');
+  let first=null, second=null, lock=false, matches=0;
+  cards.forEach(card => {
+    const el = document.createElement('div');
+    el.className = 'memory-card';
+    el.onclick = () => {
+      if (lock || card.flipped || card.matched) return;
+      card.flipped = true; el.classList.add('flipped'); el.textContent = card.emoji;
+      if (!first) { first = {card, el}; return; }
+      second = {card, el}; lock = true;
+      setTimeout(() => {
+        if (first.card.emoji === second.card.emoji) {
+          first.card.matched = second.card.matched = true;
+          first.el.classList.add('matched'); second.el.classList.add('matched');
+          matches++; status.textContent = `أحسنت! ${matches} / 8`;
+          if (matches === 8) { status.textContent = '🎉 مبروك! +150'; awardGame('Memory Match', 150); }
+        } else {
+          first.card.flipped = second.card.flipped = false;
+          first.el.classList.remove('flipped'); second.el.classList.remove('flipped');
+          first.el.textContent = ''; second.el.textContent = '';
+        }
+        first = second = null; lock = false;
+      }, 700);
     };
+    grid.appendChild(el);
   });
 }
 
-function showPurchaseModal(icon, title, desc, code) {
-  $('pIcon').textContent = icon;
-  $('pTitle').textContent = title;
-  $('pDesc').innerHTML = desc;
-  if (code) {
-    $('pCode').textContent = code;
-    $('pCode').style.display = 'block';
-  } else {
-    $('pCode').style.display = 'none';
+function initTap(c) {
+  c.innerHTML = `<div class="tap-header"><div>⏱ <b id="tapTime">20</b></div><div>✅ <b id="tapScore">0</b></div></div><div class="tap-area" id="tapArea"></div><div class="g-hint" id="tapMsg">اضغط الدوائر!</div>`;
+  const area = c.querySelector('#tapArea'), timeEl = c.querySelector('#tapTime'), scoreEl = c.querySelector('#tapScore'), msg = c.querySelector('#tapMsg');
+  let score = 0, time = 20, ended = false;
+  function spawn() {
+    if (ended) return;
+    area.innerHTML = '';
+    const t = document.createElement('div'); t.className = 'tap-target';
+    t.style.left = Math.random() * (area.clientWidth - 70) + 'px';
+    t.style.top = Math.random() * (area.clientHeight - 70) + 'px';
+    t.onclick = e => { e.stopPropagation(); score++; scoreEl.textContent = score; spawn(); };
+    area.appendChild(t);
   }
-  $('pModal').hidden = false;
+  const timer = setInterval(() => {
+    time--; timeEl.textContent = time;
+    if (time <= 0) {
+      ended = true; clearInterval(timer);
+      const pts = score * 5; msg.innerHTML = `<b>خلص الوقت! ${score} → +${pts} نقطة</b>`;
+      area.innerHTML = ''; if (pts > 0) awardGame('Speed Tap', pts);
+    }
+  }, 1000);
+  spawn();
+  return () => { ended = true; clearInterval(timer); };
 }
 
-$('pClose').onclick = () => $('pModal').hidden = true;
-
-document.querySelectorAll('#storeFilters button').forEach(b => {
-  b.onclick = () => {
-    document.querySelectorAll('#storeFilters button').forEach(x => x.classList.remove('active'));
-    b.classList.add('active');
-    activeFilter = b.dataset.filter;
-    render();
+function initNumber(c) {
+  const target = Math.floor(Math.random() * 100) + 1; let tries = 0;
+  c.innerHTML = `<p style="text-align:center;margin:0 0 10px">خمّن بين 1-100 (10 محاولات)</p><input type="number" class="ng-input" id="ngInput" placeholder="رقم..."><button class="g-btn g-btn-primary" id="ngBtn">خمّن</button><p class="g-hint" id="ngHint"></p><p style="text-align:center;color:#888;font-size:12px" id="ngTries">0 / 10</p>`;
+  const input = c.querySelector('#ngInput'), btn = c.querySelector('#ngBtn'), hint = c.querySelector('#ngHint'), triesEl = c.querySelector('#ngTries');
+  btn.onclick = () => {
+    const v = parseInt(input.value);
+    if (!v || v < 1 || v > 100) { hint.textContent = '⚠️ 1-100'; return; }
+    tries++; triesEl.textContent = `${tries} / 10`;
+    if (v === target) {
+      const pts = tries <= 5 ? 200 : tries <= 7 ? 100 : 50;
+      hint.innerHTML = `🎉 صح! الرقم ${target}. +${pts}`; awardGame('Number Guess', pts);
+      btn.disabled = input.disabled = true;
+    } else if (tries >= 10) {
+      hint.innerHTML = `❌ خلص! الرقم ${target}`; btn.disabled = input.disabled = true;
+    } else {
+      hint.textContent = v < target ? '⬆️ أعلى' : '⬇️ أقل';
+      input.value = ''; input.focus();
+    }
   };
+  input.focus();
+}
+
+function initMath(c) {
+  c.innerHTML = `<div class="tap-header"><div>⏱ <b id="msTime">30</b></div><div>✅ <b id="msScore">0</b></div></div><div style="text-align:center;font-size:2rem;font-weight:bold;margin:16px 0;color:#c7a0ff" id="msQ">-</div><input type="number" class="ng-input" id="msInput" placeholder="الإجابة"><p class="g-hint" id="msMsg"></p>`;
+  const timeEl = c.querySelector('#msTime'), scoreEl = c.querySelector('#msScore'), qEl = c.querySelector('#msQ'), input = c.querySelector('#msInput'), msg = c.querySelector('#msMsg');
+  let time = 30, score = 0, ended = false, ans = 0;
+  function newQ() {
+    const ops = ['+','-','×']; const op = ops[Math.floor(Math.random()*3)];
+    let a, b;
+    if (op === '×') { a = Math.floor(Math.random()*9)+2; b = Math.floor(Math.random()*9)+2; ans = a*b; }
+    else if (op === '-') { a = Math.floor(Math.random()*50)+20; b = Math.floor(Math.random()*a); ans = a-b; }
+    else { a = Math.floor(Math.random()*50)+1; b = Math.floor(Math.random()*50)+1; ans = a+b; }
+    qEl.textContent = `${a} ${op} ${b} = ?`;
+  }
+  input.onkeydown = e => {
+    if (e.key !== 'Enter' || ended) return;
+    const v = parseInt(input.value);
+    if (v === ans) { score++; scoreEl.textContent = score; msg.textContent = '✓'; }
+    else { msg.textContent = `✗ ${ans}`; }
+    input.value = ''; newQ();
+  };
+  const timer = setInterval(() => {
+    time--; timeEl.textContent = time;
+    if (time <= 0) {
+      ended = true; clearInterval(timer); input.disabled = true;
+      const pts = score * 5; msg.innerHTML = `<b>خلص! ${score} → +${pts}</b>`; qEl.textContent = '⏰';
+      if (pts > 0) awardGame('Math Sprint', pts);
+    }
+  }, 1000);
+  newQ(); setTimeout(() => input.focus(), 100);
+  return () => { ended = true; clearInterval(timer); };
+}
+
+function initReaction(c) {
+  c.innerHTML = `<p style="text-align:center;color:#aebdeb">اضغط "ابدأ"، ثم اضغط بأسرع وقت لما يبقى أخضر</p><div id="reactBox" style="height:200px;border-radius:14px;background:#1e293b;display:grid;place-items:center;cursor:pointer;margin:16px 0;transition:.2s;font-weight:bold"><span id="reactMsg">اضغط للبدء</span></div>`;
+  const box = c.querySelector('#reactBox'), msg = c.querySelector('#reactMsg');
+  let state = 'idle', start = 0, timeout = null;
+  box.onclick = () => {
+    if (state === 'idle') {
+      state = 'waiting'; box.style.background = '#78350f'; msg.textContent = '⏳ استنى الأخضر...';
+      timeout = setTimeout(() => { state = 'ready'; box.style.background = '#10b981'; msg.textContent = '👆 اضغط!'; start = Date.now(); }, 1500 + Math.random()*2000);
+    } else if (state === 'waiting') {
+      clearTimeout(timeout); state = 'idle'; box.style.background = '#7f1d1d'; msg.textContent = '❌ بدري!';
+    } else if (state === 'ready') {
+      const rt = Date.now() - start; state = 'idle'; box.style.background = '#1e293b';
+      msg.textContent = `${rt}ms`;
+      const pts = rt < 200 ? 200 : rt < 300 ? 150 : rt < 500 ? 100 : rt < 800 ? 50 : 20;
+      awardGame('Reaction Test', pts);
+    }
+  };
+  return () => clearTimeout(timeout);
+}
+
+function initQuiz(c) {
+  const qs = [
+    { q: 'ما أكبر كوكب؟', o: ['المشتري','زحل','الأرض','المريخ'], a: 'المشتري' },
+    { q: 'كم عدد القارات؟', o: ['5','6','7','8'], a: '7' },
+    { q: 'عاصمة اليابان؟', o: ['بكين','سيول','طوكيو','بانكوك'], a: 'طوكيو' },
+    { q: 'أطول نهر في العالم؟', o: ['النيل','الأمازون','المسيسيبي','اليانغتسي'], a: 'النيل' },
+    { q: 'من اخترع المصباح؟', o: ['نيوتن','أينشتاين','أديسون','تسلا'], a: 'أديسون' },
+  ];
+  let idx = 0, correct = 0;
+  function render() {
+    if (idx >= qs.length) {
+      const pts = correct * 40;
+      c.innerHTML = `<div style="text-align:center;padding:20px"><h3>🎉 خلصت!</h3><p>${correct} / ${qs.length}</p><p style="color:#10b981;font-size:1.4rem;font-weight:bold">+${pts}</p></div>`;
+      if (pts > 0) awardGame('General Quiz', pts);
+      return;
+    }
+    const q = qs[idx];
+    c.innerHTML = `<p style="color:#888;margin:0">${idx+1} / ${qs.length}</p><h3 style="margin:10px 0 16px">${q.q}</h3><div id="qOpts"></div>`;
+    const opts = c.querySelector('#qOpts');
+    q.o.forEach(o => {
+      const b = document.createElement('button'); b.className = 'g-btn'; b.textContent = o;
+      b.onclick = () => { if (o === q.a) correct++; idx++; render(); };
+      opts.appendChild(b);
+    });
+  }
+  render();
+}
+
+function initTicTacToe(c) {
+  let board = Array(9).fill(''); let over = false;
+  c.innerHTML = `<div class="ttt-grid" id="tttGrid">${Array(9).fill('<div class="ttt-cell" data-i="i"></div>').map((_,i)=>`<div class="ttt-cell" data-i="${i}"></div>`).join('')}</div><p class="g-hint" id="tttMsg">أنت ❌ - ابدأ!</p>`;
+  const grid = c.querySelector('#tttGrid'), msg = c.querySelector('#tttMsg');
+  function render() {
+    grid.querySelectorAll('.ttt-cell').forEach((el, i) => {
+      el.textContent = board[i];
+      el.className = 'ttt-cell' + (board[i]==='❌'?' x':'') + (board[i]==='⭕'?' o':'');
+    });
+  }
+  function checkWin(b) {
+    const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    for (const w of wins) if (b[w[0]] && b[w[0]] === b[w[1]] && b[w[0]] === b[w[2]]) return b[w[0]];
+    return b.every(x => x) ? 'tie' : null;
+  }
+  function aiMove() {
+    // AI بسيط
+    const empty = board.map((v,i)=>v?null:i).filter(v=>v!==null);
+    // حاول يكسب
+    for (const i of empty) { const copy=[...board]; copy[i]='⭕'; if (checkWin(copy)==='⭕') { board[i]='⭕'; return; } }
+    // حاول يمنع
+    for (const i of empty) { const copy=[...board]; copy[i]='❌'; if (checkWin(copy)==='❌') { board[i]='⭕'; return; } }
+    // المركز
+    if (!board[4]) { board[4]='⭕'; return; }
+    // عشوائي
+    board[empty[Math.floor(Math.random()*empty.length)]] = '⭕';
+  }
+  grid.onclick = e => {
+    const cell = e.target.closest('.ttt-cell'); if (!cell || over) return;
+    const i = parseInt(cell.dataset.i); if (board[i]) return;
+    board[i] = '❌'; render();
+    let w = checkWin(board);
+    if (w) { end(w); return; }
+    setTimeout(() => {
+      aiMove(); render();
+      w = checkWin(board);
+      if (w) end(w);
+    }, 300);
+  };
+  function end(w) {
+    over = true;
+    if (w === '❌') { msg.textContent = '🎉 فزت! +100'; awardGame('Tic-Tac-Toe', 100); }
+    else if (w === '⭕') msg.textContent = '😔 خسرت!';
+    else msg.textContent = '🤝 تعادل';
+  }
+}
+
+function initColors(c) {
+  const COLORS = ['#ef4444','#3b82f6','#10b981','#f59e0b','#8b5cf6','#ec4899','#14b8a6','#f97316'];
+  let score = 0, target = null, time = 30, ended = false;
+  function newRound() {
+    if (ended) return;
+    const shuffled = [...COLORS].sort(() => Math.random() - 0.5).slice(0, 8);
+    target = shuffled[Math.floor(Math.random()*shuffled.length)];
+    c.innerHTML = `<div class="tap-header"><div>⏱ <b id="cTime">${time}</b></div><div>✅ <b id="cScore">${score}</b></div></div><div class="color-target"><p>اضغط على هذا اللون:</p><div class="swatch" style="background:${target}"></div></div><div class="color-grid" id="colorGrid">${shuffled.map(col => `<div class="color-cell" data-col="${col}" style="background:${col}"></div>`).join('')}</div>`;
+    c.querySelectorAll('.color-cell').forEach(cell => {
+      cell.onclick = () => {
+        if (ended) return;
+        if (cell.dataset.col === target) { score++; awardGame('Color Match', 10); newRound(); }
+        else { Speedora.showToast('غلط!', 'warning'); }
+      };
+    });
+  }
+  newRound();
+  const timer = setInterval(() => {
+    time--; if (ended) return;
+    const el = c.querySelector('#cTime'); if (el) el.textContent = time;
+    if (time <= 0) { ended = true; clearInterval(timer); c.innerHTML = `<div style="text-align:center;padding:20px"><h3>⏰ خلص!</h3><p>النتيجة: ${score}</p></div>`; }
+  }, 1000);
+  return () => { ended = true; clearInterval(timer); };
+}
+
+function initSnake(c) {
+  c.innerHTML = `<div class="tap-header"><div>🎯 <b id="snScore">0</b></div><div>استخدم الأسهم</div></div><canvas id="snCanvas" width="320" height="320" style="background:#0a1227;border-radius:12px;width:100%;display:block"></canvas><p class="g-hint">استخدم الأسهم أو اسحب</p>`;
+  const canvas = c.querySelector('#snCanvas'), ctx = canvas.getContext('2d'), scoreEl = c.querySelector('#snScore');
+  const size = 16, count = 20;
+  let snake = [{x:10, y:10}], dir = {x:0,y:0}, food = {x:15,y:15}, score = 0, ended = false, speed = 150;
+  let touchStart = null;
+  canvas.addEventListener('touchstart', e => { touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY }; });
+  canvas.addEventListener('touchend', e => {
+    if (!touchStart) return;
+    const dx = e.changedTouches[0].clientX - touchStart.x, dy = e.changedTouches[0].clientY - touchStart.y;
+    if (Math.abs(dx) > Math.abs(dy)) dir = { x: dx > 0 ? 1 : -1, y: 0 };
+    else dir = { x: 0, y: dy > 0 ? 1 : -1 };
+    touchStart = null;
+  });
+  function handleKey(e) {
+    if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d'].includes(e.key)) {
+      e.preventDefault();
+      if (e.key === 'ArrowUp' || e.key === 'w') dir = { x:0, y:-1 };
+      else if (e.key === 'ArrowDown' || e.key === 's') dir = { x:0, y:1 };
+      else if (e.key === 'ArrowLeft' || e.key === 'a') dir = { x:-1, y:0 };
+      else if (e.key === 'ArrowRight' || e.key === 'd') dir = { x:1, y:0 };
+    }
+  }
+  document.addEventListener('keydown', handleKey);
+  function draw() {
+    ctx.fillStyle = '#0a1227'; ctx.fillRect(0, 0, 320, 320);
+    ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(food.x*size+size/2, food.y*size+size/2, size/2-2, 0, Math.PI*2); ctx.fill();
+    snake.forEach((s, i) => {
+      ctx.fillStyle = i === 0 ? '#10b981' : '#059669';
+      ctx.fillRect(s.x*size+1, s.y*size+1, size-2, size-2);
+    });
+  }
+  function move() {
+    if (ended) return;
+    const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+    if (head.x < 0 || head.x >= count || head.y < 0 || head.y >= count) { ended = true; return; }
+    if (snake.some(s => s.x === head.x && s.y === head.y)) { ended = true; return; }
+    snake.unshift(head);
+    if (head.x === food.x && head.y === food.y) {
+      score++; scoreEl.textContent = score; awardGame('Snake', 5);
+      food = { x: Math.floor(Math.random()*count), y: Math.floor(Math.random()*count) };
+    } else snake.pop();
+    draw();
+  }
+  const timer = setInterval(() => { move(); if (ended) clearInterval(timer); }, speed);
+  draw();
+  return () => { ended = true; clearInterval(timer); document.removeEventListener('keydown', handleKey); };
+}
+
+function initScratch(c) {
+  const can = Speedora.canScratch();
+  if (!can) {
+    c.innerHTML = `<div class="scratch-result">🎫 استخدمت السكراتش النهاردة<br><small style="color:#8998ba;font-size:12px;display:block;margin-top:10px">ارجع بكرة!</small></div>`;
+    return;
+  }
+  const prizes = ['+25','+50','حظ أوفر','+100','+200','+500','+25','+1500','+50','+100'];
+  const picked = prizes[Math.floor(Math.random()*prizes.length)];
+  c.innerHTML = `<p class="scratch-info">اكشط المربع! (يمكنك الكسب حتى 1500 نقطة)</p><canvas id="scratchCanvas" class="scratch-canvas" width="400" height="200"></canvas><div class="scratch-result" id="scratchResult" style="display:none"></div>`;
+  const canvas = c.querySelector('#scratchCanvas'), ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth * 2;
+  canvas.height = canvas.offsetHeight * 2;
+  ctx.scale(2, 2);
+  const w = canvas.width/2, h = canvas.height/2;
+  const grad = ctx.createLinearGradient(0, 0, w, h);
+  grad.addColorStop(0, '#a855f7'); grad.addColorStop(1, '#6366f1');
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = 'rgba(255,255,255,.3)';
+  ctx.font = 'bold 20px Cairo, sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('اكشط هنا', w/2, h/2);
+  let scratched = 0, revealed = false;
+  const totalPixels = w * h;
+  ctx.globalCompositeOperation = 'destination-out';
+  function scratch(x, y) {
+    if (revealed) return;
+    ctx.beginPath(); ctx.arc(x, y, 22, 0, Math.PI*2); ctx.fill();
+    scratched += Math.PI*22*22;
+    if (scratched > totalPixels * 0.4) reveal();
+  }
+  canvas.addEventListener('mousemove', e => { if (e.buttons) scratch(e.offsetX, e.offsetY); });
+  canvas.addEventListener('mousedown', e => scratch(e.offsetX, e.offsetY));
+  canvas.addEventListener('touchmove', e => { e.preventDefault(); const r = canvas.getBoundingClientRect(); scratch(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top); }, { passive: false });
+  canvas.addEventListener('touchstart', e => { const r = canvas.getBoundingClientRect(); scratch(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top); });
+  function reveal() {
+    if (revealed) return;
+    revealed = true;
+    const result = Speedora.scratch();
+    if (result.error) { Speedora.showToast(result.error, 'warning'); return; }
+    canvas.style.transition = 'opacity .5s'; canvas.style.opacity = '0';
+    setTimeout(() => { canvas.style.display = 'none'; }, 500);
+    const res = c.querySelector('#scratchResult');
+    res.style.display = 'block';
+    if (result.prize.points > 0) {
+      res.innerHTML = `🎉 مبروك!<br><span style="font-size:32px;color:#10b981">${result.prize.label}</span>`;
+      awardGame('Scratch Card', result.prize.points);
+    } else {
+      res.innerHTML = `😅 ${result.prize.label}<br><small style="color:#8998ba">جرب بكرة</small>`;
+    }
+  }
+}
+
+const games = {
+  memory: { title: '🃏 Memory Match', init: initMemory },
+  tap: { title: '⚡ Speed Tap', init: initTap },
+  number: { title: '🎯 Number Guess', init: initNumber },
+  math: { title: '🧮 Math Sprint', init: initMath },
+  reaction: { title: '⚡ Reaction Test', init: initReaction },
+  quiz: { title: '🧠 General Quiz', init: initQuiz },
+  tictactoe: { title: '❌ Tic-Tac-Toe', init: initTicTacToe },
+  colors: { title: '🎨 Color Match', init: initColors },
+  snake: { title: '🐍 Snake', init: initSnake },
+  scratch: { title: '🎫 Scratch Card', init: initScratch },
+};
+
+document.querySelectorAll('[data-game]').forEach(card => {
+  card.onclick = () => { const g = games[card.dataset.game]; if (g) openGame(g.title, g.init); };
 });
 
-window.addEventListener('pointsUpdated', render);
+window.addEventListener('pointsUpdated', updateTop);
 $('menu')?.addEventListener('click', () => document.querySelector('.sidebar')?.classList.toggle('open'));
-render();
+updateTop();
 </script>
 </body>
 </html>
