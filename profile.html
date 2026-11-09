@@ -115,7 +115,6 @@
           <button class="copy-btn" id="copyLink" style="white-space:nowrap">🔗 نسخ اللينك</button>
         </div>
         
-        <!-- 🆕 سجل الإحالات -->
         <h3 style="font-size:13px;margin:0 0 10px;color:#c7a0ff">👥 الذين دعوتهم</h3>
         <div id="referralList" class="ref-list">
           <!-- سيتم تعبئته بالكود -->
@@ -128,16 +127,20 @@
           <div><b style="font-size:13px">🔊 الأصوات</b><br><small style="color:#8998ba;font-size:11px">تشغيل/إيقاف المؤثرات</small></div>
           <button class="copy-btn" id="soundToggle">تشغيل</button>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0 0">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0 0;border-bottom:1px solid #1a2440;padding-bottom:14px">
           <div><b style="font-size:13px">🗑️ مسح البيانات</b><br><small style="color:#8998ba;font-size:11px">إعادة تعيين كل شيء</small></div>
           <button class="copy-btn" id="resetBtn" style="background:#7f1d1d;border-color:#991b1b">مسح</button>
+        </div>
+        <!-- 🆕 زرار تسجيل الخروج -->
+        <div style="padding:14px 0 0">
+          <button class="copy-btn" id="logoutBtn" style="width:100%;background:#7f1d1d;border-color:#991b1b;padding:12px;font-weight:bold;font-size:13px">🚪 تسجيل الخروج</button>
         </div>
       </div>
     </main>
   </div>
 </div>
 
-<script src="core.js?v=7"></script>
+<script src="core.js?v=10"></script>
 <script>
 const $ = id => document.getElementById(id);
 const fmt = n => Number(n || 0).toLocaleString('en-US');
@@ -166,7 +169,7 @@ function render() {
   const fullLink = window.location.origin + '/?ref=' + refCode;
   $('refLink').value = fullLink;
 
-  // 🆕 عرض قائمة الإحالات
+  // عرض قائمة الإحالات
   const refList = $('referralList');
   const referrals = s.referrals || [];
   
@@ -219,6 +222,16 @@ $('resetBtn').onclick = () => {
   if (confirm('هل أنت متأكد؟ هذا سيمسح كل بياناتك (الرصيد، الشارات، إلخ).')) {
     localStorage.clear();
     location.reload();
+  }
+};
+
+// 🆕 زرار تسجيل الخروج
+$('logoutBtn').onclick = () => {
+  if (confirm('هل تريد تسجيل الخروج؟ (نقاطك محفوظة على السيرفر)')) {
+    localStorage.removeItem('speedora_user_id');
+    localStorage.removeItem('speedora_user_name');
+    localStorage.removeItem('speedora_state');
+    window.location.href = 'auth.html';
   }
 };
 
