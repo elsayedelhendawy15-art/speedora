@@ -31,12 +31,12 @@
   .badge-item { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font-size: 20px; background: #1a1206; border: 1px solid #f59e0b; }
   .badge-item.locked { background: #0a1227; border-color: #223052; filter: grayscale(1); opacity: 0.4; }
   
-  .referral-box { background: #0a1227; border: 1px dashed #8b5cf6; border-radius: 10px; padding: 14px; text-align: center; margin-top: 10px; }
+  .referral-box { background: #0a1227; border: 1px dashed #8b5cf6; border-radius: 10px; padding: 14px; text-align: center; margin-bottom: 10px; }
   .referral-code { font-size: 24px; font-weight: 800; color: #c7a0ff; letter-spacing: 3px; margin: 6px 0; }
   .copy-btn { background: #1e293b; color: white; border: 1px solid #334155; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 12px; }
   .copy-btn:hover { background: #334155; }
-  
-  @keyframes pointFly { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-80px); opacity: 0; } }
+  .link-box { background: #0a1227; border-radius: 10px; padding: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .link-box input { background: transparent; border: none; color: #8998ba; font-size: 11px; flex: 1; overflow: hidden; text-overflow: ellipsis; }
 </style>
 </head>
 <body data-page="profile">
@@ -98,11 +98,15 @@
 
       <div class="section-card">
         <h2>🎁 كود الإحالة</h2>
-        <p style="margin:0 0 10px;font-size:12px;color:#8998ba">شارك الكود مع أصدقائك واحصل على مكافآت</p>
+        <p style="margin:0 0 10px;font-size:12px;color:#8998ba">ادعُ صديقك، وكل واحد فيكم ياخد 500 نقطة!</p>
         <div class="referral-box">
           <div style="font-size:11px;color:#8998ba">كودك الخاص</div>
-          <div class="referral-code" id="refCode">SPDXXXX</div>
+          <div class="referral-code" id="refCode">SPD-XXXXXX</div>
           <button class="copy-btn" id="copyRef">📋 نسخ الكود</button>
+        </div>
+        <div class="link-box">
+          <input type="text" id="refLink" readonly value="">
+          <button class="copy-btn" id="copyLink" style="white-space:nowrap">🔗 نسخ اللينك</button>
         </div>
       </div>
 
@@ -121,7 +125,7 @@
   </div>
 </div>
 
-<script src="core.js"></script>
+<script src="core.js?v=6"></script>
 <script>
 const $ = id => document.getElementById(id);
 const fmt = n => Number(n || 0).toLocaleString('en-US');
@@ -142,8 +146,13 @@ function render() {
   $('pTasks').textContent = s.totalTasksDone || 0;
   $('pStreak').textContent = s.streak || 0;
   $('inputName').value = name;
-  $('refCode').textContent = Speedora.getReferralCode();
   $('soundToggle').textContent = Speedora.isSoundOn() ? '🔊 تشغيل' : '🔇 إيقاف';
+
+  // كود الإحالة
+  const refCode = Speedora.get().referralCode || 'SPD-XXXXXX';
+  $('refCode').textContent = refCode;
+  const fullLink = window.location.origin + '/?ref=' + refCode;
+  $('refLink').value = fullLink;
 
   // badges
   const achs = Speedora.getAchievements();
@@ -156,17 +165,21 @@ function render() {
 
 $('saveName').onclick = () => {
   const v = $('inputName').value.trim();
-  if (!v) { alert('اكتب اسمك أولاً'); return; }
+  if (!v) { Speedora.showToast('اكتب اسمك أولاً', 'warning'); return; }
   Speedora.setUserName(v);
   Speedora.playSound('success');
   render();
-  alert('تم حفظ الاسم!');
+  Speedora.showToast('تم حفظ الاسم بنجاح', 'success');
 };
 
 $('copyRef').onclick = () => {
-  navigator.clipboard.writeText(Speedora.getReferralCode());
-  $('copyRef').textContent = '✓ تم النسخ';
-  setTimeout(() => $('copyRef').textContent = '📋 نسخ الكود', 1500);
+  navigator.clipboard.writeText($('refCode').textContent);
+  Speedora.showToast('تم نسخ كود الإحالة!', 'success');
+};
+
+$('copyLink').onclick = () => {
+  navigator.clipboard.writeText($('refLink').value);
+  Speedora.showToast('تم نسخ اللينك! ابعته لأصحابك.', 'success');
 };
 
 $('soundToggle').onclick = () => {
