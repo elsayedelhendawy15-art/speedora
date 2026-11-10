@@ -6,31 +6,30 @@
 <title>المتصدرين | Speedora</title>
 <link rel="stylesheet" href="styles.css">
 <style>
-  .lb-hero { background: radial-gradient(ellipse at 50% 30%, #5a29ad77, transparent 60%), #111832; border: 1px solid #3b2c76; border-radius: 18px; padding: 30px; text-align: center; margin-bottom: 16px; }
-  .lb-hero .trophy { font-size: 60px; }
-  .lb-hero h2 { margin: 10px 0 6px; font-size: 22px; }
-  .lb-hero p { margin: 0; color: #b5b7d3; font-size: 13px; }
-  .lb-list { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
-  .lb-row {
-    background: #0e172d; border: 1px solid #223052;
-    border-radius: 12px; padding: 14px;
-    display: flex; align-items: center; gap: 14px;
-    transition: .2s;
-  }
-  .lb-row:hover { border-color: #6845c1; }
-  .lb-row.user { background: linear-gradient(90deg, #43228e, #2a1458); border-color: #8b5cf6; box-shadow: 0 0 20px rgba(139,92,246,.3); }
-  .lb-rank { font-size: 20px; font-weight: 800; width: 40px; text-align: center; color: #8998ba; }
-  .lb-row:nth-child(1) .lb-rank { color: #ffd700; }
+  .lb-hero { background: radial-gradient(ellipse at 50% 30%, #5a29ad77, transparent 60%), #111832; border: 1px solid #3b2c76; border-radius: 20px; padding: 30px; text-align: center; margin-bottom: 20px; }
+  .lb-hero .trophy { font-size: 60px; margin-bottom: 10px; }
+  .lb-hero h2 { margin: 0 0 6px; font-size: 24px; }
+  .lb-hero p { margin: 0; color: var(--muted); font-size: 13px; }
+  
+  .lb-list { display: flex; flex-direction: column; gap: 8px; }
+  .lb-row { background: linear-gradient(145deg, rgba(17, 26, 52, 0.7), rgba(11, 18, 37, 0.9)); border: 1px solid var(--line-2); border-radius: var(--radius-sm); padding: 14px 18px; display: flex; align-items: center; gap: 14px; transition: var(--transition); }
+  .lb-row:hover { border-color: var(--purple); transform: translateX(-4px); }
+  .lb-row.user { background: linear-gradient(90deg, #43228e, #2a1458); border-color: var(--purple-2); box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
+  
+  .lb-rank { font-size: 22px; font-weight: 800; width: 40px; text-align: center; color: var(--muted); }
+  .lb-row:nth-child(1) .lb-rank { color: #ffd700; text-shadow: 0 0 10px #ffd700; }
   .lb-row:nth-child(2) .lb-rank { color: #c0c0c0; }
   .lb-row:nth-child(3) .lb-rank { color: #cd7f32; }
-  .lb-avatar { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #753cff, #d43bea); font-weight: 800; color: white; font-size: 16px; }
+  
+  .lb-avatar { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, var(--purple), var(--pink)); font-weight: 800; color: white; font-size: 18px; }
   .lb-row:nth-child(1) .lb-avatar { background: linear-gradient(135deg, #fbbf24, #d97706); }
   .lb-row:nth-child(2) .lb-avatar { background: linear-gradient(135deg, #e5e7eb, #6b7280); }
   .lb-row:nth-child(3) .lb-avatar { background: linear-gradient(135deg, #cd7f32, #92400e); }
-  .lb-name { flex: 1; font-weight: 600; font-size: 14px; }
-  .lb-name small { display: block; font-size: 10px; color: #8998ba; font-weight: 400; }
-  .lb-pts { font-size: 16px; font-weight: 800; color: #87e5d6; }
-  .lb-row.user .lb-pts { color: #ffca62; }
+  
+  .lb-name { flex: 1; font-weight: 700; font-size: 14px; }
+  .lb-name small { display: block; font-size: 11px; color: var(--muted); font-weight: 400; }
+  .lb-pts { font-size: 16px; font-weight: 800; color: var(--cyan); }
+  .lb-row.user .lb-pts { color: var(--gold); }
 </style>
 </head>
 <body data-page="leaderboard">
@@ -68,16 +67,11 @@
       </div>
 
       <div class="lb-list" id="lbList"></div>
-
-      <div class="banner" style="margin-top:16px">
-        <b>ℹ️ ملاحظة</b>
-        <p>النتائج تتحدث تلقائياً. اسمك يظهر باللون البنفسجي في القائمة.</p>
-      </div>
     </main>
   </div>
 </div>
 
-<script src="core.js"></script>
+<script src="core.js?v=12"></script>
 <script>
 const $ = id => document.getElementById(id);
 const fmt = n => Number(n || 0).toLocaleString('en-US');
@@ -85,18 +79,14 @@ const fmt = n => Number(n || 0).toLocaleString('en-US');
 function render() {
   const s = Speedora.get();
   $('userBalance').textContent = fmt(s.balance) + ' pts';
-  $('userName').textContent = 'Player';
+  $('userName').textContent = Speedora.getUserName();
 
   const list = Speedora.getLeaderboard('أنت');
-  const grid = $('lbList');
-  grid.innerHTML = list.map((u, i) => `
+  $('lbList').innerHTML = list.map((u, i) => `
     <div class="lb-row ${u.isUser ? 'user' : ''}">
       <div class="lb-rank">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1)}</div>
       <div class="lb-avatar">${u.avatar}</div>
-      <div class="lb-name">
-        ${u.name}${u.isUser ? ' (أنت)' : ''}
-        <small>${u.isUser ? 'مستواك' : 'لاعب'}</small>
-      </div>
+      <div class="lb-name">${u.name}${u.isUser ? ' (أنت)' : ''}<small>${u.isUser ? 'مستواك' : 'لاعب'}</small></div>
       <div class="lb-pts">${fmt(u.points)}</div>
     </div>
   `).join('');
