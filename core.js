@@ -1,23 +1,24 @@
 /* ==========================================
-   Speedora — Core Engine v8 (Auth System)
+   Speedora — Core Engine v9 (Clean & Fast)
    ========================================== */
 (function () {
   const KEY = 'speedora_state';
-   // كود مؤقت لمسح البيانات
-if (window.location.search.includes('reset=1')) {
-    localStorage.clear();
-    window.location.href = '/auth.html'; // توجيه مباشر لصفحة الدخول
-    return;
-}
   const API_URL = 'https://speedora-api.elsayedelhendawy15.workers.dev';
   
+  // 🆕 كود مسح البيانات من الرابط (للطوارئ)
+  if (window.location.search.includes('reset=1')) {
+    localStorage.clear();
+    window.location.replace('auth.html');
+    return;
+  }
+
   let USER_ID = localStorage.getItem('speedora_user_id');
   let syncTimeout = null;
 
-  // حماية الصفحات
-  if (!USER_ID && !window.location.pathname.includes('auth.html')) {
-    window.location.href = 'auth.html';
-    return; // وقف التنفيذ هنا
+  // 🛡️ حماية الصفحات
+  if (!USER_ID && !window.location.pathname.includes('auth.html') && !window.location.pathname.includes('admin.html')) {
+    window.location.replace('auth.html');
+    return;
   }
 
   const DEFAULTS = {
@@ -106,8 +107,7 @@ if (window.location.search.includes('reset=1')) {
     syncTimeout = setTimeout(async () => {
       try {
         await fetch(`${API_URL}/api/save`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: USER_ID, state: s })
         });
       } catch (e) { console.warn('⚠️ فشل الاتصال بالسحابة:', e); }
@@ -248,7 +248,7 @@ if (window.location.search.includes('reset=1')) {
     getUserName() { return localStorage.getItem('speedora_user_name') || 'Player'; },
     setUserName(name) {
       localStorage.setItem('speedora_user_name', name);
-      const s = load(); s.name = name; save(s); // تحديث الاسم في السيرفر
+      const s = load(); s.name = name; save(s);
       window.dispatchEvent(new CustomEvent('userNameChanged', { detail: name }));
     },
     getReferralCode() { return load().referralCode; },
@@ -386,12 +386,5 @@ if (window.location.search.includes('reset=1')) {
   window.addEventListener('DOMContentLoaded', () => {
     setTimeout(loadFromCloud, 500); setTimeout(processReferral, 1000); 
   });
-  // 🆕 تسجيل PWA (Service Worker)
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then(reg => console.log('✅ PWA جاهز', reg.scope))
-        .catch(err => console.warn('⚠️ فشل تسجيل PWA', err));
-    });
-  }
+
 })();
