@@ -386,5 +386,12 @@ if (window.location.search.includes('reset=1')) {
   window.addEventListener('DOMContentLoaded', () => {
     setTimeout(loadFromCloud, 500); setTimeout(processReferral, 1000); 
   });
-
+  // 🆕 تسجيل PWA (Service Worker)
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('✅ PWA جاهز', reg.scope))
+        .catch(err => console.warn('⚠️ فشل تسجيل PWA', err));
+    });
+  }
 })();
