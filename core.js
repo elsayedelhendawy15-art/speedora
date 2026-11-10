@@ -3,6 +3,14 @@
    ========================================== */
 (function () {
   const KEY = 'speedora_state';
+     // 🧹 تنظيف الـ Service Worker القديم (لو موجود)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+      for(let registration of registrations) {
+        registration.unregister();
+      }
+    });
+  }
   const API_URL = 'https://speedora-api.elsayedelhendawy15.workers.dev';
   
   // 🆕 كود مسح البيانات من الرابط (للطوارئ)
