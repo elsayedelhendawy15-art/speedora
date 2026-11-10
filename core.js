@@ -1,18 +1,17 @@
 /* ==========================================
-   Speedora — Core Engine v9 (Clean & Fast)
+   Speedora — Core Engine v10 (Sounds & Challenges)
    ========================================== */
 (function () {
   const KEY = 'speedora_state';
-     // 🧹 تنظيف الـ Service Worker القديم (لو موجود)
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function(registrations) {
-      for(let registration of registrations) {
-        registration.unregister();
-      }
-    });
-  }
   const API_URL = 'https://speedora-api.elsayedelhendawy15.workers.dev';
   
+  // 🧹 تنظيف الـ Service Worker القديم (لو موجود)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+      for(let registration of registrations) { registration.unregister(); }
+    });
+  }
+
   // 🆕 كود مسح البيانات من الرابط (للطوارئ)
   if (window.location.search.includes('reset=1')) {
     localStorage.clear();
@@ -23,8 +22,11 @@
   let USER_ID = localStorage.getItem('speedora_user_id');
   let syncTimeout = null;
 
-  // 🛡️ حماية الصفحات
-  if (!USER_ID && !window.location.pathname.includes('auth.html') && !window.location.pathname.includes('admin.html')) {
+  // 🛡️ حماية الصفحات (يستثنى منها auth.html و admin.html و 404.html)
+  const publicPages = ['auth.html', 'admin.html', '404.html'];
+  const isPublic = publicPages.some(p => window.location.pathname.includes(p));
+
+  if (!USER_ID && !isPublic) {
     window.location.replace('auth.html');
     return;
   }
@@ -41,7 +43,9 @@
     referralCode: null,
     referredBy: null,
     referrals: [],
-    name: 'Player'
+    name: 'Player',
+    // 🆕 بيانات التحديات الأسبوعية
+    weeklyGames: 0, weeklyStart: null, claimedWeeklyReward: false
   };
 
   const POINTS_PER_EGP = 100;
@@ -125,6 +129,21 @@
   const calcLevel = (earned) => { let l = 1; LEVELS.forEach((v, i) => { if (earned >= v) l = i + 1; }); return l; };
   const streakBonus = (streak) => streak < 3 ? 50 : streak < 7 ? 100 : streak < 14 ? 200 : streak < 30 ? 350 : 500;
 
+  // 🆕 دالة تحديث التحديات الأسبوعية
+  function updateWeeklyProgress(s, type, amount = 1) {
+    const now = new Date();
+    // لو مفيش بداية أسبوع، أو الأسبوع خلص (أكتر من 7 أيام)
+    if (!s.weeklyStart || (now - new Date(s.weeklyStart)) > 7 * 24 * 60 * 60 * 1000) {
+      s.weeklyStart = now.toISOString();
+      s.weeklyGames = 0;
+      s.claimedWeeklyReward = false;
+    }
+    
+    if (type === 'game') {
+      s.weeklyGames += amount;
+    }
+  }
+
   window.Speedora = {
     get: load,
     formatNum: (n) => Number(n || 0).toLocaleString('en-US'),
@@ -135,8 +154,10 @@
       s.balance += amount; s.earned += amount;
       s.activity.unshift({ type, title, points: amount, date: new Date().toISOString() });
       if (s.activity.length > 200) s.activity = s.activity.slice(0, 200);
-      if (type === 'game') s.totalGamesPlayed++;
+      
+      if (type === 'game') { s.totalGamesPlayed++; updateWeeklyProgress(s, 'game'); }
       if (type === 'task') s.totalTasksDone++;
+      
       s.level = calcLevel(s.earned);
       save(s);
       if (s.level > oldLevel) window.dispatchEvent(new CustomEvent('levelUp', { detail: { level: s.level, name: LEVEL_NAMES[s.level - 1] } }));
@@ -169,6 +190,41 @@
       this.addPoints(bonus, `مكافأة يومية (${ns} يوم)`, 'bonus');
       const s2 = load(); s2.streak = ns; s2.lastClaim = new Date().toISOString(); save(s2);
       return { ok: true, bonus, streak: ns };
+    },
+
+    // 🆕 التحديات الأسبوعية
+    getWeeklyChallenges() {
+      const s = load();
+      const now = new Date();
+      if (!s.weeklyStart || (now - new Date(s.weeklyStart)) > 7 * 24 * 60 * 60 * 1000) {
+        return { 
+          daysLeft: 7, 
+          gamesPlayed: 0, 
+          gamesTarget: 20, 
+          reward: 2000, 
+          claimed: false 
+        };
+      }
+      const daysLeft = Math.ceil((7 * 24 * 60 * 60 * 1000 - (now - new Date(s.weeklyStart))) / (24 * 60 * 60 * 1000));
+      return {
+        daysLeft: daysLeft > 0 ? daysLeft : 0,
+        gamesPlayed: s.weeklyGames || 0,
+        gamesTarget: 20,
+        reward: 2000,
+        claimed: s.claimedWeeklyReward || false
+      };
+    },
+    
+    claimWeeklyReward() {
+      const wc = this.getWeeklyChallenges();
+      if (wc.gamesPlayed < wc.gamesTarget) return { error: 'لم تكمل التحدي بعد' };
+      if (wc.claimed) return { error: 'استلمت المكافأة بالفعل' };
+      
+      const s = load();
+      s.claimedWeeklyReward = true;
+      save(s);
+      this.addPoints(wc.reward, 'مكافأة التحدي الأسبوعي', 'bonus');
+      return { ok: true, reward: wc.reward };
     },
 
     getWheelPrizes: () => WHEEL_PRIZES,
@@ -302,21 +358,47 @@
       return acts.filter(a => a.type === type);
     },
 
+    // 🆕 محرك الأصوات المحسن
     isSoundOn() { return localStorage.getItem('speedora_sound') !== 'off'; },
     toggleSound() { const on = !this.isSoundOn(); localStorage.setItem('speedora_sound', on ? 'on' : 'off'); return on; },
     playSound(type) {
       if (!this.isSoundOn()) return;
       try {
         if (!window._audioCtx) window._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const ctx = window._audioCtx; const now = ctx.currentTime;
-        const notes = { point: [523.25, 659.25, 783.99], success: [523.25, 659.25, 783.99, 1046.5], fail: [329.63, 261.63], spin: [261.63, 329.63, 392.00, 523.25], achievement: [659.25, 783.99, 987.77, 1318.51] };
-        const seq = notes[type] || notes.point;
-        seq.forEach((freq, i) => {
-          const osc = ctx.createOscillator(); const gain = ctx.createGain();
-          osc.type = 'sine'; osc.frequency.value = freq;
-          gain.gain.setValueAtTime(0, now + i * 0.08); gain.gain.linearRampToValueAtTime(0.15, now + i * 0.08 + 0.01); gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.25);
-          osc.connect(gain); gain.connect(ctx.destination); osc.start(now + i * 0.08); osc.stop(now + i * 0.08 + 0.3);
-        });
+        const ctx = window._audioCtx; 
+        const now = ctx.currentTime;
+        
+        const playTone = (freq, time, duration, vol = 0.15, wave = 'sine') => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = wave;
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0, time);
+          gain.gain.linearRampToValueAtTime(vol, time + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(time);
+          osc.stop(time + duration);
+        };
+
+        if (type === 'success') {
+          playTone(523.25, now, 0.15, 0.1, 'triangle');
+          playTone(659.25, now + 0.1, 0.15, 0.1, 'triangle');
+          playTone(783.99, now + 0.2, 0.4, 0.15, 'triangle');
+        } else if (type === 'error') {
+          playTone(329.63, now, 0.2, 0.15, 'sawtooth');
+          playTone(261.63, now + 0.15, 0.3, 0.15, 'sawtooth');
+        } else if (type === 'point') {
+          playTone(880.00, now, 0.1, 0.1, 'sine');
+        } else if (type === 'spin') {
+          for (let i = 0; i < 5; i++) playTone(400 + i*50, now + i*0.1, 0.1, 0.05, 'square');
+        } else if (type === 'achievement') {
+          playTone(523.25, now, 0.15, 0.1, 'square');
+          playTone(659.25, now + 0.1, 0.15, 0.1, 'square');
+          playTone(783.99, now + 0.2, 0.15, 0.1, 'square');
+          playTone(1046.5, now + 0.3, 0.5, 0.15, 'square');
+        }
       } catch (e) {}
     },
 
@@ -340,12 +422,13 @@
     }
   };
 
+  // Live Bar
   const style = document.createElement('style');
   style.textContent = `@keyframes spSlide { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } } #speedora-live-bar { position: fixed; bottom: 0; left: 0; right: 0; background: linear-gradient(90deg, #101831, #1a1042); border-top: 1px solid #753cff; padding: 10px 14px; z-index: 9990; font-family: 'Cairo', sans-serif; display: flex; align-items: center; gap: 10px; font-size: 12px; color: #c7a0ff; box-shadow: 0 -4px 20px rgba(117,60,255,.3); direction: rtl; } #speedora-live-bar .dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: spPulse 1.5s infinite; flex-shrink: 0; } #speedora-live-bar .feed { flex: 1; overflow: hidden; position: relative; height: 18px; } #speedora-live-bar .feed span { position: absolute; width: 100%; animation: spSlide .5s ease-out; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } @keyframes spPulse { 0%,100%{opacity:1} 50%{opacity:.3} } body { padding-bottom: 50px !important; }`;
   document.head.appendChild(style);
 
   window.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('speedora-live-bar')) return;
+    if (document.getElementById('speedora-live-bar') || isPublic) return;
     const bar = document.createElement('div'); bar.id = 'speedora-live-bar';
     bar.innerHTML = `<span class="dot"></span><div class="feed" id="spFeed"></div><span style="font-size:10px;opacity:.7">🔴 مباشر</span>`;
     document.body.appendChild(bar);
@@ -354,10 +437,11 @@
     showNext();
   });
 
-  window.addEventListener('levelUp', e => { if (window.Speedora) window.Speedora.showToast(`🎉 وصلت للمستوى ${e.detail.level} - ${e.detail.name}!`, 'success'); });
-  window.addEventListener('achievementUnlocked', e => { if (window.Speedora) window.Speedora.showToast(`${e.detail.icon} إنجاز: ${e.detail.title} (+${e.detail.reward})`, 'success'); });
+  window.addEventListener('levelUp', e => { if (window.Speedora) window.Speedora.showToast(`🎉 وصلت للمستوى ${e.detail.level} - ${e.detail.name}!`, 'success'); window.Speedora.playSound('achievement'); });
+  window.addEventListener('achievementUnlocked', e => { if (window.Speedora) window.Speedora.showToast(`${e.detail.icon} إنجاز: ${e.detail.title} (+${e.detail.reward})`, 'success'); window.Speedora.playSound('achievement'); });
 
   async function loadFromCloud() {
+    if (!USER_ID) return;
     try {
       const res = await fetch(`${API_URL}/api/load?userId=${USER_ID}`);
       const data = await res.json();
@@ -373,6 +457,7 @@
   }
 
   function processReferral() {
+    if (isPublic) return;
     const urlParams = new URLSearchParams(window.location.search);
     const incomingRef = urlParams.get('ref');
     if (incomingRef) {
@@ -392,7 +477,9 @@
   }
 
   window.addEventListener('DOMContentLoaded', () => {
-    setTimeout(loadFromCloud, 500); setTimeout(processReferral, 1000); 
+    if (!isPublic) {
+      setTimeout(loadFromCloud, 500); setTimeout(processReferral, 1000); 
+    }
   });
 
 })();
