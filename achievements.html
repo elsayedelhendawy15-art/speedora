@@ -6,37 +6,22 @@
 <title>الإنجازات | Speedora</title>
 <link rel="stylesheet" href="styles.css">
 <style>
-  .ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
-  .ach-card {
-    background: linear-gradient(145deg, #111a34, #0b1225);
-    border: 1px solid #223052;
-    border-radius: 14px;
-    padding: 18px;
-    text-align: center;
-    position: relative;
-    transition: .2s;
-  }
-  .ach-card.unlocked { border-color: #f59e0b; background: linear-gradient(145deg, #2a1f0a, #1a1206); }
-  .ach-card:hover { transform: translateY(-2px); }
-  .ach-icon { font-size: 40px; margin-bottom: 8px; opacity: .4; }
-  .ach-card.unlocked .ach-icon { opacity: 1; filter: drop-shadow(0 0 12px #ffca62); }
-  .ach-card h3 { font-size: 14px; margin: 0 0 4px; color: #c7a0ff; }
-  .ach-card p { font-size: 11px; color: #8998ba; margin: 0 0 8px; min-height: 30px; }
-  .ach-reward { font-size: 12px; color: #10b981; font-weight: bold; }
-  .ach-status { position: absolute; top: 10px; left: 10px; font-size: 18px; }
-  .ach-locked { filter: grayscale(1); opacity: .6; }
-  .summary-box {
-    background: linear-gradient(135deg, #2a1b50, #101831);
-    border: 1px solid #5a3b83;
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .summary-box h2 { margin: 0; font-size: 16px; }
-  .summary-box .count { font-size: 32px; font-weight: 800; color: #ffca62; }
+  .ach-summary { background: linear-gradient(135deg, #2a1b50, #101831); border: 1px solid #5a3b83; border-radius: var(--radius); padding: 22px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+  .ach-summary h2 { margin: 0 0 4px; font-size: 18px; }
+  .ach-summary p { margin: 0; color: var(--muted); font-size: 12px; }
+  .ach-summary .count { font-size: 36px; font-weight: 900; background: linear-gradient(135deg, #ffca62, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  
+  .ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .ach-card { background: linear-gradient(145deg, rgba(17, 26, 52, 0.7), rgba(11, 18, 37, 0.9)); border: 1px solid var(--line-2); border-radius: var(--radius); padding: 20px; text-align: center; position: relative; transition: var(--transition); }
+  .ach-card.unlocked { border-color: var(--gold); background: linear-gradient(145deg, rgba(42, 31, 10, 0.8), rgba(11, 18, 37, 0.9)); box-shadow: 0 0 20px rgba(245, 158, 11, 0.15); }
+  .ach-card:hover { transform: translateY(-3px); }
+  .ach-icon { font-size: 42px; margin-bottom: 10px; opacity: 0.4; transition: 0.3s; }
+  .ach-card.unlocked .ach-icon { opacity: 1; filter: drop-shadow(0 0 12px rgba(255, 202, 98, 0.8)); }
+  .ach-card h3 { font-size: 15px; margin: 0 0 4px; color: var(--purple-2); }
+  .ach-card p { font-size: 12px; color: var(--muted); margin: 0 0 12px; min-height: 34px; }
+  .ach-reward { font-size: 13px; font-weight: 800; color: var(--green); }
+  .ach-status { position: absolute; top: 12px; left: 12px; font-size: 18px; }
+  .ach-card.locked { filter: grayscale(0.8); opacity: 0.7; }
 </style>
 </head>
 <body data-page="achievements">
@@ -49,7 +34,7 @@
       <a href="earn.html">▤ Earn</a>
       <a href="rewards.html">🎁 Rewards</a>
       <a href="wheel.html">🎡 Wheel</a>
-      <a href="achievements.html" class="active">🏅 Achievements</a>
+      <a class="active" href="achievements.html">🏅 Achievements</a>
       <a href="leaderboard.html">🏆 Leaderboard</a>
       <a href="wallet.html">▣ Wallet</a>
       <a href="profile.html">♙ Profile</a>
@@ -67,10 +52,10 @@
         <div><span class="eyebrow">TROPHIES</span><h1>الإنجازات</h1><p>اجمع الشارات واحصل على مكافآت إضافية</p></div>
       </div>
 
-      <div class="summary-box">
+      <div class="ach-summary">
         <div>
           <h2>الشارات المُفتوحة</h2>
-          <p style="margin:4px 0 0;font-size:12px;color:#b5b7d3" id="summaryText">-</p>
+          <p id="summaryText">-</p>
         </div>
         <div class="count" id="achCount">0 / 0</div>
       </div>
@@ -80,7 +65,7 @@
   </div>
 </div>
 
-<script src="core.js"></script>
+<script src="core.js?v=12"></script>
 <script>
 const $ = id => document.getElementById(id);
 const fmt = n => Number(n || 0).toLocaleString('en-US');
@@ -95,11 +80,10 @@ function render() {
   $('achCount').textContent = `${unlocked} / ${total}`;
   $('summaryText').textContent = `حصلت على ${fmt(totalRewards)} نقطة من الإنجازات`;
   $('userBalance').textContent = fmt(s.balance) + ' pts';
-  $('userName').textContent = 'Player';
+  $('userName').textContent = Speedora.getUserName();
 
-  const grid = $('achGrid');
-  grid.innerHTML = achs.map(a => `
-    <div class="ach-card ${a.unlocked ? 'unlocked' : 'ach-locked'}">
+  $('achGrid').innerHTML = achs.map(a => `
+    <div class="ach-card ${a.unlocked ? 'unlocked' : 'locked'}">
       <div class="ach-status">${a.unlocked ? '✅' : '🔒'}</div>
       <div class="ach-icon">${a.icon}</div>
       <h3>${a.title}</h3>
