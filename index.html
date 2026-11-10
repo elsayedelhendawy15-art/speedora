@@ -6,7 +6,7 @@
 <title>Speedora | العب واكسب</title>
 <link rel="stylesheet" href="styles.css">
 <script>
-  // 🛡️ حماية فورية وتحويل لصفحة الدخول
+  // 🛡️ حماية فورية
   if (window.location.search.includes('reset=1')) {
     localStorage.clear();
     window.location.replace('auth.html');
@@ -14,42 +14,6 @@
     window.location.replace('auth.html');
   }
 </script>
-<style>
-  .hero-live { background: radial-gradient(ellipse at 75% 50%, #4d1c9c, transparent 45%), linear-gradient(115deg, #111831, #110d2c); border: 1px solid #3c2b78; border-radius: 20px; padding: 40px 30px; text-align: center; margin-bottom: 16px; position: relative; overflow: hidden; }
-  .hero-live::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 20% 80%, rgba(212,59,234,.15), transparent 40%); pointer-events: none; }
-  .hero-live h1 { font-size: clamp(32px, 5vw, 52px); line-height: 1.1; margin: 16px 0 12px; position: relative; }
-  .hero-live h1 em { font-style: normal; color: #c64df3; }
-  .hero-live p { color: #b5c0dc; font-size: 14px; max-width: 500px; margin: 0 auto 24px; position: relative; }
-  .hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; position: relative; }
-  .hero-cta .btn { padding: 14px 28px; font-size: 14px; }
-
-  .daily-banner { background: linear-gradient(100deg, #7c2d12, #451a03); border: 2px solid #f59e0b; border-radius: 16px; padding: 16px 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-  .daily-banner h3 { margin: 0 0 4px; font-size: 15px; color: #ffca62; }
-  .daily-banner p { margin: 0; font-size: 12px; color: #fde68a; }
-  .daily-banner button { background: #f59e0b; color: #451a03; border: 0; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 13px; white-space: nowrap; }
-  .daily-banner button:disabled { background: #422006; color: #854d0e; cursor: not-allowed; }
-
-  .live-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
-  .live-stat { background: #0e172d; border: 1px solid #223052; border-radius: 12px; padding: 14px; text-align: center; }
-  .live-stat b { display: block; font-size: 22px; color: #c7a0ff; margin-bottom: 2px; }
-  .live-stat small { font-size: 10px; color: #8998ba; }
-
-  .quick-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
-  .quick-card { background: linear-gradient(145deg, #111a34, #0b1225); border: 1px solid #223052; border-radius: 14px; padding: 18px; text-decoration: none; color: inherit; transition: .2s; text-align: center; }
-  .quick-card:hover { border-color: #6845c1; transform: translateY(-3px); }
-  .quick-card .qc-icon { font-size: 32px; margin-bottom: 8px; }
-  .quick-card h3 { font-size: 13px; margin: 0 0 4px; }
-  .quick-card p { font-size: 10px; color: #8998ba; margin: 0; }
-
-  .recent-activity { background: #0e172d; border: 1px solid #223052; border-radius: 14px; padding: 16px; margin-bottom: 16px; }
-  .recent-activity h2 { margin: 0 0 12px; font-size: 15px; }
-  .act-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #1a2440; font-size: 12px; }
-  .act-row:last-child { border: 0; }
-  .act-row .pts { color: #10b981; font-weight: bold; }
-
-  @keyframes pulse-gold { 0%,100%{box-shadow: 0 0 0 0 rgba(245,158,11,.4)} 50%{box-shadow: 0 0 0 10px rgba(245,158,11,0)} }
-  .pulse { animation: pulse-gold 2s infinite; }
-</style>
 </head>
 <body data-page="home">
 <div class="shell">
@@ -75,6 +39,8 @@
       <div class="actions"><a class="user" href="profile.html"><span class="avatar">A</span><span><b id="topName">Player</b><br><small id="topBalance">0 pts</small></span></a></div>
     </header>
     <main class="content">
+      
+      <!-- 🎁 مكافأة اليوم -->
       <div class="daily-banner" id="dailyBanner">
         <div>
           <h3>🎁 مكافأة اليوم جاهزة!</h3>
@@ -83,14 +49,36 @@
         <button id="claimDailyBtn">استلم</button>
       </div>
 
-      <div class="hero-live">
-        <span class="eyebrow">✦ GLOBAL GAMES & REWARDS PLATFORM</span>
-        <h1>العب. أنجز. <em>اربح.</em></h1>
-        <p>10 ألعاب حقيقية، عجلة حظ يومية، إنجازات ومكافآت - ابدأ فوراً واكسب نقاطك الأولى.</p>
-        <div class="hero-cta">
-          <a class="btn" href="games.html">🎮 العب الآن</a>
-          <a href="wheel.html" style="color: #c7a0ff; text-decoration: none; align-self: center; font-weight: bold;">🎡 لف العجلة →</a>
+      <!-- 🏆 التحدي الأسبوعي (جديد) -->
+      <div class="panel fade-in" style="margin-bottom: 20px; border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(145deg, rgba(120, 53, 15, 0.2), rgba(11, 18, 37, 0.9));">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div style="flex: 1; min-width: 200px;">
+            <span class="eyebrow" style="color: #f59e0b;">WEEKLY CHALLENGE</span>
+            <h2 style="margin: 4px 0; font-size: 18px;">🏆 العب 20 لعبة هذا الأسبوع</h2>
+            <p style="color: var(--muted); font-size: 12px;">المكافأة: <b style="color: #10b981;">+2000 نقطة</b></p>
+          </div>
+          <div style="text-align: left;">
+            <div style="font-size: 12px; color: var(--muted); margin-bottom: 6px;">متبقي: <b id="wcDays">7</b> أيام</div>
+            <div style="background: #1d2a49; height: 8px; border-radius: 10px; width: 120px; overflow: hidden;">
+              <div id="wcBar" style="background: linear-gradient(90deg, #f59e0b, #ef4444); height: 100%; width: 0%; transition: width 0.5s;"></div>
+            </div>
+            <div style="font-size: 11px; color: var(--muted); margin-top: 4px;"><span id="wcProgress">0</span> / 20 لعبة</div>
+          </div>
+          <button id="wcClaimBtn" class="btn" style="background: linear-gradient(100deg, #f59e0b, #d97706);">استلام المكافأة</button>
         </div>
+      </div>
+
+      <div class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow">✦ GLOBAL GAMES & REWARDS PLATFORM</span>
+          <h1>العب. أنجز. <em>اربح.</em></h1>
+          <p>10 ألعاب حقيقية، عجلة حظ يومية، إنجازات وتحديات - ابدأ فوراً واكسب نقاطك.</p>
+          <div class="hero-actions">
+            <a class="btn" href="games.html">🎮 العب الآن</a>
+            <a href="wheel.html" style="color: var(--purple-2); font-weight: bold;">🎡 لف العجلة ←</a>
+          </div>
+        </div>
+        <div class="hero-art"><div class="planet">🎮</div></div>
       </div>
 
       <div class="live-stats">
@@ -101,12 +89,12 @@
       </div>
 
       <div class="quick-grid">
-        <a class="quick-card" href="games.html"><div class="qc-icon">🎮</div><h3>الألعاب</h3><p>10 ألعاب شغالة</p></a>
-        <a class="quick-card" href="wheel.html"><div class="qc-icon">🎡</div><h3>عجلة الحظ</h3><p>حتى 1000 نقطة</p></a>
-        <a class="quick-card" href="earn.html"><div class="qc-icon">▤</div><h3>المهام</h3><p>مهام يومية</p></a>
-        <a class="quick-card" href="achievements.html"><div class="qc-icon">🏅</div><h3>الإنجازات</h3><p>14 شارة</p></a>
-        <a class="quick-card" href="leaderboard.html"><div class="qc-icon">🏆</div><h3>المتصدرين</h3><p>منافسة عالمية</p></a>
-        <a class="quick-card" href="wallet.html"><div class="qc-icon">▣</div><h3>المحفظة</h3><p>كل معاملاتك</p></a>
+        <a class="quick-card" href="games.html"><span class="qc-icon">🎮</span><h3>الألعاب</h3><p>10 ألعاب شغالة</p></a>
+        <a class="quick-card" href="wheel.html"><span class="qc-icon">🎡</span><h3>عجلة الحظ</h3><p>حتى 1000 نقطة</p></a>
+        <a class="quick-card" href="earn.html"><span class="qc-icon">▤</span><h3>المهام</h3><p>مهام يومية</p></a>
+        <a class="quick-card" href="achievements.html"><span class="qc-icon">🏅</span><h3>الإنجازات</h3><p>14 شارة</p></a>
+        <a class="quick-card" href="leaderboard.html"><span class="qc-icon">🏆</span><h3>المتصدرين</h3><p>منافسة عالمية</p></a>
+        <a class="quick-card" href="wallet.html"><span class="qc-icon">▣</span><h3>المحفظة</h3><p>كل معاملاتك</p></a>
       </div>
 
       <div class="recent-activity">
@@ -114,12 +102,11 @@
         <div id="recentList"></div>
       </div>
 
-      <!-- 🆕 الفوتر الجديد -->
-      <footer style="margin-top:24px;padding:20px;text-align:center;border-top:1px solid #223052;color:#8998ba;font-size:11px">
+      <footer>
         <div style="margin-bottom:10px">
-          <a href="about.html" style="color:#c7a0ff;text-decoration:none;margin:0 8px">عن الموقع</a>
-          <a href="terms.html" style="color:#c7a0ff;text-decoration:none;margin:0 8px">شروط الاستخدام</a>
-          <a href="privacy.html" style="color:#c7a0ff;text-decoration:none;margin:0 8px">سياسة الخصوصية</a>
+          <a href="about.html">عن الموقع</a>
+          <a href="terms.html">شروط الاستخدام</a>
+          <a href="privacy.html">سياسة الخصوصية</a>
         </div>
         <div>© 2026 Speedora. جميع الحقوق محفوظة.</div>
       </footer>
@@ -128,7 +115,7 @@
   </div>
 </div>
 
-<script src="core.js?v=11"></script>
+<script src="core.js?v=12"></script>
 <script>
 const $ = id => document.getElementById(id);
 const fmt = n => Number(n || 0).toLocaleString('en-US');
@@ -145,6 +132,7 @@ function render() {
   $('sLevel').textContent = lvl.level;
   $('sStreak').textContent = s.streak || 0;
 
+  // Daily Banner
   const canClaim = Speedora.canClaimDaily();
   $('claimDailyBtn').disabled = !canClaim;
   if (canClaim) {
@@ -159,10 +147,34 @@ function render() {
     $('dailyBanner').classList.remove('pulse');
   }
 
+  // Weekly Challenge
+  const wc = Speedora.getWeeklyChallenges();
+  $('wcDays').textContent = wc.daysLeft;
+  $('wcProgress').textContent = wc.gamesPlayed;
+  $('wcBar').style.width = Math.min(100, (wc.gamesPlayed / wc.gamesTarget) * 100) + '%';
+  
+  const wcBtn = $('wcClaimBtn');
+  if (wc.claimed) {
+    wcBtn.textContent = '✓ تم الاستلام';
+    wcBtn.disabled = true;
+    wcBtn.style.opacity = '0.5';
+  } else if (wc.gamesPlayed >= wc.gamesTarget) {
+    wcBtn.textContent = '🎁 استلم +2000';
+    wcBtn.disabled = false;
+    wcBtn.style.opacity = '1';
+    wcBtn.style.animation = 'pulse-gold 2s infinite';
+  } else {
+    wcBtn.textContent = `متبقي ${wc.gamesTarget - wc.gamesPlayed} ألعاب`;
+    wcBtn.disabled = true;
+    wcBtn.style.opacity = '0.6';
+    wcBtn.style.animation = 'none';
+  }
+
+  // Recent Activity
   const list = $('recentList');
   const recent = (s.activity || []).slice(0, 5);
   if (!recent.length) {
-    list.innerHTML = '<p style="color:#8998ba;font-size:12px;text-align:center;padding:20px 0">لسه مفيش نشاط. جرب تلعب أو استلم مكافأتك!</p>';
+    list.innerHTML = '<p style="color:var(--muted);font-size:12px;text-align:center;padding:20px 0">لسه مفيش نشاط. جرب تلعب!</p>';
   } else {
     list.innerHTML = recent.map(a => {
       const isPlus = a.points > 0;
@@ -177,15 +189,19 @@ function isYesterday(iso) {
   return new Date(iso).toDateString() === y.toDateString();
 }
 
-$('claimDailyBtn').onclick = (e) => {
+$('claimDailyBtn').onclick = () => {
   const r = Speedora.claimDaily();
   if (r.error) { Speedora.showToast(r.error, 'warning'); return; }
   Speedora.playSound('success');
-  const el = document.createElement('div');
-  el.style.cssText = 'position:fixed;font-size:32px;font-weight:800;color:#10b981;z-index:9999;pointer-events:none;left:50%;top:40%;transform:translateX(-50%);text-shadow:0 0 30px rgba(16,185,129,.8)';
-  el.textContent = '+' + r.bonus;
-  document.body.appendChild(el);
-  el.animate([{ transform: 'translate(-50%, 0)', opacity: 1 }, { transform: 'translate(-50%, -120px)', opacity: 0 }], { duration: 1500 }).onfinish = () => el.remove();
+  Speedora.showToast(`+${r.bonus} نقطة! سلسلة ${r.streak} يوم 🔥`, 'success');
+  render();
+};
+
+$('wcClaimBtn').onclick = () => {
+  const r = Speedora.claimWeeklyReward();
+  if (r.error) { Speedora.showToast(r.error, 'warning'); return; }
+  Speedora.playSound('achievement');
+  Speedora.showToast(`🏆 مبروك! تم استلام مكافأة التحدي (+${r.reward} نقطة)`, 'success');
   render();
 };
 
