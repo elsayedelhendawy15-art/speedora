@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
- <link rel="manifest" href="manifest.json">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>تسجيل الدخول | Speedora</title>
@@ -26,7 +25,10 @@
   button { width: 100%; padding: 14px; border: none; border-radius: 12px; background: linear-gradient(100deg, #d43bea, #642cff); color: white; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 10px; transition: 0.3s; }
   button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(100,44,255,0.3); }
   button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-  .error-msg { color: #ef4444; font-size: 12px; text-align: center; margin-bottom: 10px; min-height: 18px; }
+  .error-msg { color: #ef4444; font-size: 12px; text-align: center; margin-bottom: 10px; min-height: 18px; font-weight: bold; }
+  .terms-box { display: flex; align-items: flex-start; gap: 8px; margin: 15px 0; font-size: 11px; color: #8998ba; }
+  .terms-box input { width: auto; margin-top: 2px; }
+  .terms-box a { color: #c7a0ff; text-decoration: none; }
 </style>
 </head>
 <body>
@@ -58,6 +60,14 @@
         <label>كلمة المرور</label>
         <input type="password" id="password" placeholder="8 أحرف على الأقل" required minlength="8">
       </div>
+      
+      <div class="terms-box" id="termsGroup" style="display: none;">
+        <input type="checkbox" id="agreeTerms">
+        <label for="agreeTerms" style="font-weight: 400; margin: 0; color: #8998ba; font-size: 11px;">
+          أوافق على <a href="terms.html" target="_blank">شروط الاستخدام</a> و <a href="privacy.html" target="_blank">سياسة الخصوصية</a>، وأؤكد أن عمري 18 عاماً أو أكثر.
+        </label>
+      </div>
+
       <button type="submit" id="submitBtn">دخول</button>
     </form>
   </div>
@@ -73,6 +83,7 @@
     isLogin = true;
     $('tabLogin').classList.add('active'); $('tabSignup').classList.remove('active');
     $('nameGroup').style.display = 'none';
+    $('termsGroup').style.display = 'none';
     $('submitBtn').textContent = 'دخول';
     $('errorMsg').textContent = '';
   };
@@ -81,6 +92,7 @@
     isLogin = false;
     $('tabSignup').classList.add('active'); $('tabLogin').classList.remove('active');
     $('nameGroup').style.display = 'block';
+    $('termsGroup').style.display = 'flex';
     $('submitBtn').textContent = 'إنشاء حساب';
     $('errorMsg').textContent = '';
   };
@@ -91,7 +103,10 @@
     const password = $('password').value;
     const name = $('name').value.trim();
 
-    if (!isLogin && !name) { $('errorMsg').textContent = 'اكتب اسمك أولاً'; return; }
+    if (!isLogin) {
+      if (!name) { $('errorMsg').textContent = 'اكتب اسمك أولاً'; return; }
+      if (!$('agreeTerms').checked) { $('errorMsg').textContent = 'يجب الموافقة على الشروط وتأكيد العمر'; return; }
+    }
 
     $('submitBtn').disabled = true;
     $('submitBtn').textContent = 'جارٍ التنفيذ...';
@@ -110,12 +125,10 @@
 
       if (!res.ok) throw new Error(data.error || 'حدث خطأ');
 
-      // حفظ الجلسة في المتصفح
       localStorage.setItem('speedora_user_id', data.userId);
       localStorage.setItem('speedora_user_name', data.name);
       localStorage.setItem('speedora_state', JSON.stringify(data.state));
 
-      // التوجه للموقع
       window.location.href = 'index.html';
 
     } catch (err) {
