@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>لوحة التحكم | Speedora Admin</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+  body { background: #080b19; color: white; padding: 20px; min-height: 100vh; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 { color: #c7a0ff; text-align: center; margin-bottom: 20px; }
+  .login-box { background: #101831; border: 1px solid #332b50; border-radius: 16px; padding: 30px; max-width: 400px; margin: 50px auto; text-align: center; }
+  .login-box input { width: 100%; padding: 12px; margin: 10px 0; background: #080b19; border: 1px solid #332b50; border-radius: 8px; color: white; font-family: inherit; }
+  .btn { background: linear-gradient(100deg, #d43bea, #642cff); color: white; border: 0; padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; font-family: inherit; width: 100%; }
+  
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+  .stat-card { background: #101831; border: 1px solid #332b50; border-radius: 12px; padding: 20px; text-align: center; }
+  .stat-card b { font-size: 28px; color: #c7a0ff; display: block; }
+  .stat-card span { color: #8998ba; font-size: 12px; }
+  
+  .table-wrap { background: #101831; border-radius: 12px; overflow-x: auto; border: 1px solid #332b50; }
+  .user-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+  .user-table th, .user-table td { padding: 12px 15px; text-align: right; border-bottom: 1px solid #222; font-size: 13px; }
+  .user-table th { background: #1a2440; color: #c7a0ff; }
+  .user-table tr:hover { background: #1a2440; }
+  .user-actions { display: flex; gap: 5px; align-items: center; }
+  .user-actions input { width: 70px; padding: 6px; border-radius: 6px; border: 1px solid #444; background: #080b19; color: white; text-align: center; }
+  .btn-small { padding: 6px 10px; background: #10b981; border-radius: 6px; color: white; border: 0; cursor: pointer; font-family: inherit; }
+  .btn-small.minus { background: #ef4444; }
+  .logout-btn { background: #ef4444; width: auto; padding: 8px 16px; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="container" id="app">
+  <div class="login-box" id="loginView">
+    <h1>👑 دخول الإدارة</h1>
+    <p style="color:#8998ba; font-size:13px; margin-bottom:15px;">أدخل مفتاح الأدمن السري للمتابعة</p>
+    <input type="password" id="adminKey" placeholder="Admin Key...">
+    <button class="btn" onclick="login()">دخول</button>
+  </div>
+
+  <div id="dashboardView" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:20px;">
+      <h1>📊 لوحة التحكم</h1>
+      <button class="btn logout-btn" onclick="logout()">تسجيل خروج</button>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><b id="totalUsers">0</b><span>إجمالي المستخدمين</span></div>
+      <div class="stat-card"><b id="totalPoints">0</b><span>إجمالي النقاط</span></div>
+      <div class="stat-card"><b id="totalGames">0</b><span>إجمالي الألعاب الملعوبة</span></div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="user-table">
+        <thead>
+          <tr><th>اللاعب</th><th>البريد الإلكتروني</th><th>الرصيد</th><th>ألعاب</th><th>إجراءات</th></tr>
+        </thead>
+        <tbody id="usersTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_URL = 'https://speedora-api.elsayedelhendawy15.workers.dev';
+  let currentKey = '';
+
+  function login() {
+    const key = document.getElementById('adminKey').value.trim();
+    if (!key) return alert('أدخل المفتاح أولاً');
+    
+    fetch(`${API_URL}/api/admin/users?key=${key}`)
+      .then(res => { if (res.status === 403) throw new Error('مفتاح خاطئ'); return res.json(); })
+      .then(data => {
+        currentKey = key;
+        document.getElementById('loginView').style.display = 'none';
+        document.getElementById('dashboardView').style.display = 'block';
+        renderUsers(data.users);
+      })
+      .catch(err => alert(err.message));
+  }
+
+  function logout() { location.reload(); }
+
+  function renderUsers(users) {
+    document.getElementById('totalUsers').textContent = users.length;
+    document.getElementById('totalPoints').textContent = users.reduce((sum, u) => sum + u.balance, 0).toLocaleString('en-US');
+    document.getElementById('totalGames').textContent = users.reduce((sum, u) => sum + u.totalGames, 0);
+
+    document.getElementById('usersTable').innerHTML = users.map(u => `
+      <tr>
+        <td><b style="color:white">${u.name || 'لاعب'}</b><br><small style="color:#8998ba">${u.id.substring(0,12)}...</small></td>
+        <td>${u.email || 'غير متوفر'}</td>
+        <td><b style="color:#10b981">${u.balance.toLocaleString('en-US')}</b></td>
+        <td>${u.totalGames}</td>
+        <td class="user-actions">
+          <input type="number" id="amt_${u.id}" value="500" step="100">
+          <button class="btn-small" onclick="updateBalance('${u.id}', 1)">+</button>
+          <button class="btn-small minus" onclick="updateBalance('${u.id}', -1)">-</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function updateBalance(userId, sign) {
+    const amount = Number(document.getElementById(`amt_${userId}`).value) * sign;
+    if (!amount) return alert('أدخل مبلغ صحيح');
+    
+    const res = await fetch(`${API_URL}/api/admin/update-balance?key=${currentKey}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetUserId: userId, amount })
+    });
+    
+    if (res.ok) { alert('تم التحديث بنجاح!'); location.reload(); }
+    else { alert('حدث خطأ أثناء التحديث'); }
+  }
+</script>
+</body>
+</html>
